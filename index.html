@@ -220,6 +220,9 @@
  .keypad button{height:40px}
  .panel>.steptrack{font-size:10px}
 }
+
+/* v1.9 collectible card reveal */
+.monster.locked .art{filter:grayscale(1) brightness(.2);opacity:.55}.monster[data-card]{cursor:pointer}.monster[data-card]:focus-visible{outline:3px solid gold}.card-reveal{display:grid;justify-items:center;gap:10px}.card-reveal img{width:min(50vw,200px);height:170px;object-fit:contain;filter:drop-shadow(0 0 15px gold);animation:card-pop .6s ease-out}.card-reveal strong{font-size:1.3rem}.card-reveal .reward{color:#b6f0ac;font-weight:bold}@keyframes card-pop{from{opacity:0;transform:scale(.5) rotate(-8deg)}70%{transform:scale(1.1)}to{opacity:1;transform:scale(1)}}@media(prefers-reduced-motion:reduce){.card-reveal img{animation:none}}
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="brand">⚔ Multiplikationsriket</div><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -331,8 +334,8 @@ function scene(){let b=s.battle;let palette=['#efbf65','#b4e8de','#c9a17b','#8cc
 function game(){let w=WORLDS[s.world];return `<div class="panel"><div class="top"><b>${w.emoji} ${w.name}</b><span class="steptrack">${s.phase==='battle'?'STRID':`STEG ${s.step}/12`}</span></div>${scene()}${s.phase==='battle'&&s.battle?.boss?'<div class="boss-phase">👑 BOSS · Fas '+(s.battle.phase||1)+'/2 · '+(s.battle.phase===2?'⚡ '+BOSS_SKILLS[s.world].name:'Vid halva hälsan väcks bossens kraft')+'</div>':''}${s.phase==='battle'?`<div class="actions">${[['slash','⚔️ Svärd '+dmg()],['power','💥 Kraft '+(dmg()+20)+' (2 tal)']].map(([a,l])=>`<button class="btn ${s.battle?.move===a?'':'secondary'} small" data-move="${a}" ${s.battle?.pending?'disabled':''}>${l}</button>`).join('')}</div>`:''}${s.event?'<p class="hint">🎁 En händelse väntar. Tryck på Fortsätt.</p>':s.phase==='battle'&&!s.battle?.move?'<p class="hint">Välj din attack för att få en matteuppgift.</p>':questionUIIfReady()}<div class="steptrack">${s.phase==='battle'?s.battle?.boss?'👑 Blockera bossens attacker med ett rätt svar inom 5 sekunder!':'Fienden anfaller ibland efter din tur.':'Lös tal för att röra dig framåt. Händelser väntar längs vägen.'}</div></div>`}
 function questionUIIfReady(){return s.event||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
 function shop(){return `<div class="panel"><h2 class="title">⚒️ Smedjan · 🪙 ${s.gold}</h2><p>Utrustningen gör riddaren starkare. Inga riktiga pengar används.</p><p class="hint">Nu utrustad: ${escapeHtml(equipmentSummary())}</p><div class="hero-banner">${heroVisual()}</div><div class="grid">${ITEMS.map(i=>`<div class="shopitem"><div class="art">${i.art}</div><b>${i.name}</b><div>${i.damage?'+'+i.damage+' skada':i.hp?'+'+i.hp+' max HP':'+'+i.block+' sköld'}</div><small>${s.inventory.includes(i.id)?'Ägd':'🪙 '+i.price}</small><div class="actions"><button class="btn small" data-buy="${i.id}" ${s.inventory.includes(i.id)||s.gold<i.price?'disabled':''}>Köp</button><button class="btn secondary small" data-equip="${i.id}" ${!s.inventory.includes(i.id)||s.equipment[i.slot]===i.id?'disabled':''}>${s.equipment[i.slot]===i.id?'Utrustad':'Utrusta'}</button></div></div>`).join('')}</div></div>`}
-function cards(){let total=MONSTERS.length,owned=MONSTERS.filter(m=>s.cards.includes(m.id));let byWorld=WORLDS.map((w,i)=>{let all=MONSTERS.filter(m=>m.world===i),got=all.filter(m=>s.cards.includes(m.id));return '<span class="pill">'+w.emoji+' '+got.length+'/'+all.length+'</span>'}).join(' ');return `<div class="panel"><h2 class="title">📖 Monsterboken ${owned.length}/${total}</h2><p>Besegra monster för att låsa upp deras kort. Återvänd till tidigare världar via kartan för att samla de kort du saknar. Monster väljs i första hand bland oupptäckta kort i världen.</p><p>${byWorld}</p><p class="hint">✨ Vanlig · 💠 Sällsynt · 💜 Episk · 🟡 Legendarisk. Kortens sällsynthet påverkar samlingen, inte matematiken.</p><div class="cards">${MONSTERS.map(m=>{let has=s.cards.includes(m.id),tier=rarity(m.id);return `<div class="monster ${has?'':'locked'}" ${has?'data-card="'+m.id+'" role="button" tabindex="0"':''} title="${has?escapeHtml(m.name):'Besegra monster i '+escapeHtml(WORLDS[m.world].name)}"><div class="art">${has?`<img src="assets/monster-${(m.id-1)%10}.svg" alt="">`:'❔'}</div><b>${has?escapeHtml(m.name):'Okänd'}</b><div class="steptrack">#${String(m.id).padStart(2,'0')} · ${has?tier:'Låst'}</div><div class="steptrack">${WORLDS[m.world].name}</div></div>`}).join('')}</div></div>`}
-function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2><p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.8 · Mobilanpassad mobilhöjd · femsekundersblockering och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
+function cards(){let total=MONSTERS.length,owned=MONSTERS.filter(m=>s.cards.includes(m.id));let byWorld=WORLDS.map((w,i)=>{let all=MONSTERS.filter(m=>m.world===i),got=all.filter(m=>s.cards.includes(m.id));return '<span class="pill">'+w.emoji+' '+got.length+'/'+all.length+'</span>'}).join(' ');return `<div class="panel"><h2 class="title">📖 Monsterboken ${owned.length}/${total}</h2><p>Besegra monster för att låsa upp deras kort. Samla alla i en värld för en engångsbonus på 75 guld och 50 XP. Återvänd till tidigare världar via kartan för att samla de kort du saknar. Monster väljs i första hand bland oupptäckta kort i världen.</p><p>${byWorld}</p><p class="hint">✨ Vanlig · 💠 Sällsynt · 💜 Episk · 🟡 Legendarisk. Kortens sällsynthet påverkar samlingen, inte matematiken.</p><div class="cards">${MONSTERS.map(m=>{let has=s.cards.includes(m.id),tier=rarity(m.id);return `<div class="monster ${has?'':'locked'}" ${has?'data-card="'+m.id+'" role="button" tabindex="0"':''} title="${has?escapeHtml(m.name):'Besegra monster i '+escapeHtml(WORLDS[m.world].name)}"><div class="art">${has?`<img src="assets/monster-${(m.id-1)%10}.svg" alt="">`:'<img src="assets/monster-'+((m.id-1)%10)+'.svg" alt="Okänt monster">'}</div><b>${has?escapeHtml(m.name):'Okänd'}</b><div class="steptrack">#${String(m.id).padStart(2,'0')} · ${has?tier:'Låst'}</div><div class="steptrack">${WORLDS[m.world].name}</div></div>`}).join('')}</div></div>`}
+function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2><p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.9 · Mobilanpassad mobilhöjd · femsekundersblockering och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
 function battleAt(step){
  if(s.phase==='battle'||s.event)return;
  let boss=step===12;let candidates=MONSTERS.filter(m=>m.world===s.world);
@@ -372,9 +375,23 @@ function modal(title,body,done){
  document.body.appendChild(o);
  o.querySelector('button').addEventListener('click',()=>{o.remove();done?.()},{once:true});
 }
+function showVictoryEvent(){
+ const ev=s.event;if(!ev)return;
+ if(ev.card){
+  const m=MONSTERS.find(x=>x.id===ev.card);
+  if(m){
+   document.getElementById('game-modal')?.remove();
+   const o=document.createElement('div');o.className='game-modal-backdrop';o.id='game-modal';
+   o.innerHTML='<div class="modal" role="dialog" aria-modal="true"><h2>'+escapeHtml(ev.title)+'</h2><div class="card-reveal"><div>✨ NYTT MONSTERKORT! ✨</div><img src="assets/monster-'+((m.id-1)%10)+'.svg" alt="'+escapeHtml(m.name)+'"><strong>'+escapeHtml(m.name)+'</strong><span>'+rarity(m.id)+' · #'+m.id+'</span>'+(ev.collectionBonus?'<span class="reward">🏆 Samlingen komplett! +75 🪙 +50 XP</span>':'')+'</div><p>'+escapeHtml(ev.body)+'</p><button class="btn">Fortsätt</button></div>';
+   document.body.appendChild(o);actionSound('chest');
+   o.querySelector('button').addEventListener('click',()=>{o.remove();s.event=null;notice='';save();render()},{once:true});return;
+  }
+ }
+ modal(ev.title,ev.body,()=>{s.event=null;notice='';save();render()});
+}
 function showPendingEvent(){
  if(!s.event)return;
- modal(s.event.title,s.event.body,()=>{s.event=null;notice='';save();render()});
+ showVictoryEvent();
 }
 function recoverGame(){
  if(s.pendingDefense){showDefense();return}
@@ -434,16 +451,18 @@ function answer(){
 }
 function winBattle(){
  let b=s.battle;if(!b)return;
- if(!s.cards.includes(b.card))s.cards.push(b.card);
+ let newCard=!s.cards.includes(b.card);if(newCard)s.cards.push(b.card);
+ let collectionBonus=false;
+ if(newCard){const m=MONSTERS.find(x=>x.id===b.card);if(m&&MONSTERS.filter(x=>x.world===m.world).every(x=>s.cards.includes(x.id))){s.collectionRewards??=[];if(!s.collectionRewards.includes(m.world)){s.collectionRewards.push(m.world);collectionBonus=true;s.gold+=75;xp(50)}}}
  let gold=b.boss?100:15,earned=b.boss?75:20;
  s.gold+=gold;xp(earned);s.battle=null;s.phase='travel';s.question=null;s.hp=Math.min(maxHp(),s.hp+20);
  if(b.boss){
   if(!s.cleared.includes(s.world))s.cleared.push(s.world);
   let old=s.world;s.step=0;if(old<7)s.world=old+1;
-  s.event={type:'victory',title:'🏆 '+WORLDS[old].boss+' besegrad!',body:'Du fick '+gold+' guld, '+earned+' XP och ett monsterkort! '+(old<7?'Nästa värld upplåst!':'Du räddade riket!')};
+  s.event={type:'victory',title:'🏆 '+WORLDS[old].boss+' besegrad!',card:newCard?b.card:null,collectionBonus,body:'Du fick '+gold+' guld, '+earned+' XP. '+(newCard?'Nytt monsterkort! ':'Kortet finns redan! ')+(old<7?'Nästa värld upplåst!':'Du räddade riket!')};
   screen='map';save();render();showPendingEvent();
  }else{
-  s.event={type:'victory',title:'⚔️ Seger!',body:'Monster besegrat! +'+gold+' guld, +'+earned+' XP och ett monsterkort!'};
+  s.event={type:'victory',title:'⚔️ Seger!',card:newCard?b.card:null,collectionBonus,body:'Monster besegrat! +'+gold+' guld, +'+earned+' XP. '+(newCard?'Nytt monsterkort!':'Kortet finns redan!')};
   save();render();showPendingEvent();
  }
 }
