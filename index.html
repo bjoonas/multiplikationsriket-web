@@ -1,0 +1,369 @@
+<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#101923"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest"><title>Multiplikationsriket</title><style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#f4e8cc;background:#0b1119}*{box-sizing:border-box}body{margin:0;overflow-x:hidden;background:radial-gradient(circle at 50% 10%,#283d4b,#0b1119 70%);min-height:100dvh}button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.35}.app{max-width:1150px;margin:auto;padding:12px 14px 25px}.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.brand{font-family:Georgia,serif;font-size:clamp(18px,3vw,30px);font-weight:bold;color:#f1cf87}.pill{border:1px solid #8b744e;background:#192736;border-radius:30px;padding:5px 10px;font-size:12px}.btn{background:linear-gradient(#a58147,#654a29);border:1px solid #e1bb77;border-radius:10px;color:#fff5da;padding:10px 15px;font-weight:800;box-shadow:0 3px 0 #392b1e}.btn.secondary{background:#263a4a;border-color:#637b8a;box-shadow:0 3px 0 #101a25}.btn.small{padding:6px 10px;font-size:12px}.nav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}.nav button{flex:1;min-width:90px}.panel{border:1px solid #6b624e;background:linear-gradient(155deg,#23303d,#111b27);border-radius:15px;padding:14px;box-shadow:0 9px 30px #0007}.scene{height:clamp(185px,42vh,390px);border:2px solid #74694f;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(#182d3f 0%,#364653 50%,#29362d 51%,#171d1b 100%)}.scene:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 75% 18%,#d6a76365,transparent 20%),repeating-linear-gradient(110deg,transparent 0 60px,#0d1b2080 61px 78px,transparent 80px 120px);opacity:.6}.moon{position:absolute;right:16%;top:8%;width:50px;height:50px;background:#d3d5c3;border-radius:50%;box-shadow:0 0 40px #e6d9a4aa}.hill{position:absolute;bottom:20%;width:120%;left:-10%;height:35%;background:#1c292b;clip-path:polygon(0 90%,12% 20%,25% 78%,40% 5%,57% 82%,75% 22%,100% 90%,100% 100%,0 100%)}.floor{position:absolute;bottom:0;width:100%;height:22%;background:repeating-linear-gradient(95deg,#343a32 0 60px,#3b4038 60px 63px)}.castle{position:absolute;right:8%;bottom:20%;font-size:clamp(55px,10vw,115px);filter:brightness(.55) drop-shadow(0 0 12px #b4a07c55)}.hero,.enemy{position:absolute;bottom:16%;font-size:clamp(55px,10vw,105px);filter:drop-shadow(0 9px 3px #0008);transition:left .55s ease,transform .25s}.hero{left:16%;z-index:3}.enemy{left:72%;z-index:3}.hero.walk{animation:walk .55s ease}.hero.hit{animation:slash .8s ease}.enemy.hurt{animation:hurt .55s ease}.enemy.attack{animation:enemyattack .8s ease}.enemy.dead{animation:dead .8s forwards}.effect{position:absolute;left:55%;top:36%;font-size:50px;animation:pop .85s forwards;z-index:5}.healthbar{height:12px;background:#4a2930;border:1px solid #b49b78;border-radius:9px;overflow:hidden}.healthbar>div{height:100%;background:linear-gradient(90deg,#b53b35,#f0805c);transition:width .4s}.battleheads{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:20px}.battleheads>div{width:35%;max-width:180px;background:#101924c9;padding:7px;border-radius:8px;font-size:12px}.controls{display:grid;grid-template-columns:1fr minmax(170px,240px);gap:12px;margin-top:9px}.question{display:flex;flex-direction:column;gap:7px;justify-content:center}.math{font-size:clamp(26px,5vw,45px);font-weight:900;color:#ffe5a3}.answer{border:1px solid #96845d;border-radius:8px;padding:7px 12px;background:#0b131c;font-size:25px;min-height:48px}.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.keypad button{background:#35495c;border:1px solid #73879a;border-radius:7px;color:white;min-height:39px;font-weight:800}.keypad button.go{background:#9b7136;border-color:#e7c078}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.message{min-height:30px;color:#f1d59c;font-size:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.world{padding:12px;border:1px solid #70634e;border-radius:12px;background:#182635;text-align:left;color:#f4e8cc}.world.active{border-color:#edc274;box-shadow:0 0 15px #bc8e3930}.world .icon{font-size:35px}.world small{color:#aebfc9}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px}.monster{border:1px solid #73644b;background:#26323d;border-radius:10px;text-align:center;padding:9px 5px;min-height:110px}.monster .art{font-size:40px}.monster.locked{filter:grayscale(1);opacity:.55}.stat{display:inline-block;margin:4px 8px 4px 0}.equip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.shopitem{background:#1b2b37;border:1px solid #73644b;border-radius:10px;padding:10px}.shopitem .art{font-size:32px}.progress{height:9px;background:#0a111a;border-radius:10px;overflow:hidden}.progress>div{height:100%;background:#c9a15c}.hidden{display:none!important}.overlay{position:absolute;inset:0;background:#071019db;z-index:10;display:flex;align-items:center;justify-content:center;padding:15px}.modal{max-width:470px;width:100%;text-align:center;background:#1a2a38;border:2px solid #bd9657;border-radius:14px;padding:18px}.modal h2{font-family:Georgia,serif;color:#f1d39a}.foot{color:#aebdc5;font-size:12px;margin-top:12px}.hint{color:#a6cce3}.steptrack{font-size:12px;color:#c9c3ad}.title{font-family:Georgia,serif;color:#f2d79b}.portrait{display:none}@keyframes walk{0%,100%{transform:translateY(0)}35%{transform:translateY(-13px)}70%{transform:translateY(-5px)}}@keyframes slash{0%{transform:translateX(0)}45%{transform:translateX(140px) rotate(-15deg)}65%{transform:translateX(140px) rotate(15deg)}100%{transform:translateX(0)}}@keyframes hurt{30%{transform:translateX(15px);filter:brightness(3)}60%{transform:translateX(-8px)}}@keyframes enemyattack{50%{transform:translateX(-100px)}}@keyframes dead{100%{opacity:0;transform:translateY(40px) rotate(30deg)}}@keyframes pop{0%{transform:scale(.2);opacity:0}40%{opacity:1;transform:scale(1.3)}100%{transform:translateY(-65px);opacity:0}}@media(orientation:portrait) and (max-width:700px){.portrait{position:fixed;inset:0;background:#101923;z-index:100;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:24px}}@media(max-height:460px){.app{padding:4px 10px}.top{margin:0}.nav{margin-bottom:3px}.nav .btn{padding:5px}.scene{height:42vh}.controls{margin-top:5px}.keypad button{min-height:28px}.panel{padding:7px}.math{font-size:25px}.answer{min-height:34px;font-size:20px;padding:2px 8px}.message{min-height:20px}}
+
+/* v0.2 – layered vector-art production pass */
+.scene{background:#172734;border-color:#8f7955;isolation:isolate;box-shadow:inset 0 0 55px #060b12,0 0 24px #060c14}
+.scene:before{display:none}.moon,.hill,.floor,.castle{display:none}
+.scene-bg{position:absolute;inset:0;background-image:var(--world-bg);background-size:auto 100%;background-position:center bottom;filter:saturate(.83);animation:drift 24s ease-in-out infinite alternate}
+.scene-fog{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,#101a2070,transparent 44%),radial-gradient(ellipse at 70% 70%,#e3e8dd18,transparent 54%);animation:fogmove 9s ease-in-out infinite alternate}
+.hero,.enemy{width:clamp(90px,14vw,160px);height:78%;bottom:3%;font-size:0;display:flex;align-items:end;justify-content:center;transform-origin:50% 85%;filter:drop-shadow(0 11px 7px #050b13a8)}
+.hero img,.enemy img{height:100%;width:100%;object-fit:contain;pointer-events:none}
+.enemy{width:clamp(98px,16vw,170px);transform:scaleX(-1)}
+.hero.walk{animation:hero-walk .65s ease-in-out}.hero.hit{animation:hero-slash .85s ease-in-out}.hero.guard{animation:hero-guard .8s ease-in-out}
+.enemy.hurt{animation:monster-hurt .7s ease}.enemy.attack{animation:monster-attack .8s ease}.enemy.dead{animation:monster-dead .9s forwards}
+.effect{font-family:Georgia,serif;font-weight:bold;color:#ffdc8b;text-shadow:0 0 10px #ff7c27,0 2px 2px black}
+.battleheads{z-index:6}.battleheads>div{background:#0b1422e8;border:1px solid #77694e}
+.hero-spot{position:absolute;bottom:8%;left:6%;width:48%;height:9%;background:radial-gradient(ellipse,#e9b96c21,transparent 65%);pointer-events:none}
+.hero-art,.monster-art{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 8px #0007)}
+.monster .art{height:83px;display:flex;align-items:center;justify-content:center}.monster .art img{max-width:84px;max-height:83px}
+.shopitem .art{height:55px}.shopitem .art img{height:55px;width:65px;object-fit:contain}
+.hero-banner{height:135px;background:linear-gradient(90deg,#0e1822c0,#10192420),url('assets/world-2.svg') center 65%/cover;border:1px solid #7e7159;border-radius:12px;display:flex;align-items:end;justify-content:center;overflow:hidden;margin:8px 0}.hero-banner img{height:150px;filter:drop-shadow(0 5px 10px #000)}
+@keyframes drift{from{background-position:47% bottom}to{background-position:54% bottom}}
+@keyframes fogmove{from{opacity:.55;transform:translateX(-2%)}to{opacity:1;transform:translateX(3%)}}
+@keyframes hero-walk{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(15px,-9px) rotate(-5deg)}55%{transform:translate(35px,0) rotate(4deg)}80%{transform:translate(47px,-6px) rotate(-3deg)}}
+@keyframes hero-slash{0%,100%{transform:translateX(0) rotate(0)}30%{transform:translateX(85px) rotate(-12deg)}55%{transform:translateX(145px) rotate(13deg)}70%{transform:translateX(145px) rotate(-5deg)}}
+@keyframes hero-guard{50%{filter:drop-shadow(0 0 22px #65c7ff);transform:translateY(-9px)}}
+@keyframes monster-hurt{25%{transform:scaleX(-1) translateX(-14px);filter:brightness(2.3)}65%{transform:scaleX(-1) translateX(10px)}}
+@keyframes monster-attack{50%{transform:scaleX(-1) translateX(100px) rotate(-9deg)}}
+@keyframes monster-dead{100%{opacity:0;transform:scaleX(-1) translateY(70px) rotate(22deg)}}
+@media(max-height:460px){.hero,.enemy{height:90%;bottom:-3%}.hero-banner{height:75px}.hero-banner img{height:95px}}
+@media(prefers-reduced-motion:reduce){.scene-bg,.scene-fog{animation:none}}
+.game-modal-backdrop{position:fixed;inset:0;z-index:1000;background:#050a10e8;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}.game-modal-backdrop .modal{max-height:95dvh;overflow:auto}.boss-phase{color:#ffb46e;font-weight:bold;font-size:13px;margin:5px 0} 
+/* Etapp 3: tydliga motattacker och unika specialeffekter */
+.hero.wounded{animation:hero-wounded .65s ease!important}
+.boss-fx{font-size:clamp(28px,6vw,54px);text-shadow:0 0 20px #ff6c33;filter:drop-shadow(0 0 12px #ef854c)}
+@keyframes hero-wounded{0%,100%{transform:translateX(0);filter:brightness(1)}25%{transform:translateX(-12px);filter:brightness(2.5) sepia(.7)}55%{transform:translateX(8px);filter:brightness(1.8)}}
+.boss-phase{padding:5px 9px;background:#512a27;border:1px solid #c88956;border-radius:8px}
+
+/* Etapp 4: layered equipment, rendered over the hero in every scene */
+.hero-visual{position:relative;width:100%;height:100%;display:flex;align-items:end;justify-content:center}.hero-visual>img{width:100%;height:100%;object-fit:contain}.gear-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.hero-banner .hero-visual{width:150px;height:150px;flex:none}.hero-banner .hero-visual>img{height:100%}.hero .hero-visual{height:100%;width:100%}.monster[data-card]{cursor:pointer;outline-offset:3px}.monster[data-card]:focus-visible{outline:3px solid #e7bf75}
+
+/* Etapp 5: combat choreography, boss elemental signatures and victory */
+.scene{--impact:#f6c46b}.scene.fx-fire{--impact:#ff642b}.scene.fx-dragon{--impact:#ff9b35}.scene.fx-lightning{--impact:#a5d9ff}.scene.fx-shadow{--impact:#b295ed}.scene.fx-curse{--impact:#8ae5cb}.scene.fx-quake{--impact:#e0b780}.scene.fx-thorns{--impact:#8fc76b}.scene.fx-stun{--impact:#f4b75b}
+.scene.combat-impact{animation:arena-shake .34s ease-out}.scene.combat-impact:after{content:"";position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 38% 58%,var(--impact),transparent 58%);mix-blend-mode:screen;animation:impact-flash .58s ease-out forwards;pointer-events:none}
+.scene .enemy.attack{animation:monster-attack .7s ease}.scene .hero.wounded{animation:hero-wounded .65s ease!important}
+.battle-fx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}.battle-fx .burst{position:absolute;left:48%;top:45%;font-size:clamp(32px,6vw,75px);filter:drop-shadow(0 0 18px var(--impact));animation:burst-fly .75s ease-out forwards}.battle-fx .burst.enemy-hit{left:72%}.battle-fx .burst.hero-hit{left:21%}.battle-fx .burst.guard-hit{left:21%;color:#a7e4ff}.battle-fx .burst.victory{left:48%;top:25%;font-size:clamp(42px,9vw,110px);animation:victory-burst 1.1s ease-out forwards}
+.scene.victory-glow{box-shadow:inset 0 0 70px #e7c27699,0 0 35px #f5c86a66}.scene.victory-glow .enemy{animation:monster-dead .9s forwards}
+@keyframes arena-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes impact-flash{0%{opacity:.62}100%{opacity:0}}
+@keyframes burst-fly{0%{opacity:0;transform:scale(.25) translateY(35px)}30%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.6) translateY(-45px)}}
+@keyframes victory-burst{0%{opacity:0;transform:scale(.2)}40%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.7) translateY(-35px)}}
+@media(prefers-reduced-motion:reduce){.scene.combat-impact,.scene.combat-impact:after,.battle-fx .burst,.scene.victory-glow .enemy{animation:none!important}.battle-fx .burst{opacity:1}}
+
+/* v0.8: boss signatures, phase telegraph and elemental attack particles */
+.boss-aura{position:absolute;left:68%;bottom:5%;width:24%;height:65%;border-radius:50%;pointer-events:none;z-index:2;background:radial-gradient(ellipse,var(--boss-glow,#e9b66755),transparent 70%);filter:blur(8px);animation:boss-pulse 2.6s ease-in-out infinite alternate}
+.boss-rune{position:absolute;right:13%;bottom:9%;width:21%;height:14%;border:2px solid var(--boss-rune,#f1c66d);border-radius:50%;transform:perspective(80px) rotateX(60deg);box-shadow:0 0 17px var(--boss-rune,#f1c66d);opacity:.8;animation:rune-spin 8s linear infinite;z-index:2}
+.boss-rune:before,.boss-rune:after{content:"";position:absolute;inset:12%;border:1px dashed currentColor;border-radius:50%}.boss-rune:after{inset:30%;border-style:solid}
+.boss-aura.phase-two{animation:boss-enrage .7s ease-in-out infinite alternate}
+.boss-telegraph{position:absolute;top:22%;left:37%;width:30%;text-align:center;z-index:8;font-family:Georgia,serif;font-weight:900;font-size:clamp(16px,3vw,32px);color:#fff3ce;text-shadow:0 0 15px #ef6c27,0 2px 4px #000;animation:telegraph .8s ease-out forwards;pointer-events:none}
+.battle-fx .spark{position:absolute;left:var(--x);top:var(--y);width:var(--sz);height:var(--sz);border-radius:50%;background:var(--impact);box-shadow:0 0 13px var(--impact);animation:spark-shower .7s ease-out forwards}
+.scene.fx-lightning .scene-fog{filter:brightness(2.4)}.scene.fx-shadow .scene-fog{background:#100f2bb0}.scene.fx-fire .scene-fog,.scene.fx-dragon .scene-fog{background:linear-gradient(0deg,#e7553d4d,transparent 75%)}
+@keyframes boss-pulse{from{opacity:.35;transform:scale(.88)}to{opacity:.95;transform:scale(1.13)}}@keyframes boss-enrage{from{opacity:.55;transform:scale(.94)}to{opacity:1;transform:scale(1.2)}}@keyframes rune-spin{to{transform:perspective(80px) rotateX(60deg) rotate(360deg)}}@keyframes telegraph{0%{opacity:0;transform:scale(.5)}40%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.25) translateY(-20px)}}@keyframes spark-shower{from{opacity:1;transform:translate(0,0) scale(1)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
+@media(prefers-reduced-motion:reduce){.boss-aura,.boss-rune,.boss-telegraph,.battle-fx .spark{animation:none!important}.battle-fx .spark{display:none}}
+
+/* v0.9: learning progress */
+.mastery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}.mastery-tile{padding:12px;border:1px solid #746b56;border-radius:11px;background:#182735}.mastery-tile h3{margin:0 0 6px;color:#f0d393}.mastery-tile small{color:#c0ccd0}.fact-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:9px}.fact{padding:5px 2px;border-radius:5px;text-align:center;background:#293643;border:1px solid #586477;font-size:12px}.fact.known{background:#224838;border-color:#5aa77c}.fact.learning{background:#52462d;border-color:#b99755}.fact.weak{background:#58332e;border-color:#c77c62}.mastery-banner{margin:10px 0;padding:10px;border:1px solid #d0a85f;border-radius:10px;background:#3a3024}.mastery-tile .progress{margin:8px 0}
+.scene.travel-moving .scene-bg{animation:pan .9s ease-out}.scene.travel-moving .hero{animation:stride .9s ease-in-out!important}.scene.travel-moving .hero-visual{animation:bob .22s ease-in-out 4}.travel-progress{position:absolute;left:5%;right:5%;bottom:4%;height:6px;background:#142333;border-radius:6px}.travel-progress>div{height:100%;background:#f0c776;transition:width .8s}.travel-marker{position:absolute;right:12%;bottom:15%;font-size:36px}.defense-backdrop{position:fixed;inset:0;z-index:300;background:#08111de9;display:grid;place-items:center;padding:8px}.defense-box{width:min(540px,98vw);max-height:98vh;overflow:auto;border:2px solid #dcb16c;border-radius:14px;background:#243749;padding:12px;text-align:center}.defense-time{height:9px;background:#5b2730;border-radius:8px;overflow:hidden;margin:8px}.defense-time>div{height:100%;background:#80d9a2;width:100%}.defense-keys{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.defense-keys button{padding:10px 2px;background:#3b5873;color:white;border:1px solid #91a4b8;border-radius:7px}.defense-keys .submit{background:#548c68}@keyframes pan{from{transform:scale(1.14) translateX(5%)}to{transform:scale(1) translateX(-2%)}}@keyframes stride{from{transform:translateX(-50px) translateY(0)}45%{transform:translateX(0) translateY(-14px)}to{transform:translateX(0)}}@keyframes bob{50%{transform:translateY(-8px) rotate(4deg)}}@media(prefers-reduced-motion:reduce){.scene.travel-moving .scene-bg,.scene.travel-moving .hero,.scene.travel-moving .hero-visual{animation:none!important}}
+/* v1.1: iPhone 16 landscape compact gameplay. Safe-area aware, no fixed pixel heights. */
+@media (orientation:landscape) and (max-height:520px) and (max-width:1000px){
+ html,body{width:100%;min-height:100%;overflow-x:hidden}
+ .app{max-width:none;width:100%;padding:env(safe-area-inset-top,0px) max(8px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left,0px));}
+ .app>.top{height:23px;min-height:23px;margin:0 0 3px;gap:5px}
+ .brand{font-size:15px;line-height:1}.pill{font-size:10px;padding:2px 7px}
+ .nav{gap:3px;margin-bottom:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+ .nav::-webkit-scrollbar{display:none}
+ .nav button{flex:1 0 auto;min-width:0;white-space:nowrap;padding:4px 6px;font-size:10px;line-height:1.1;box-shadow:none;border-radius:6px}
+ .panel{padding:5px 7px;border-radius:8px}
+ .panel>.top{margin:0 0 3px;line-height:1.1}
+ .scene{height:clamp(92px,31dvh,145px);border-width:1px;border-radius:6px}
+ .hero,.enemy{height:96%;bottom:-4%;width:clamp(75px,14vw,130px)}
+ .battleheads{top:3px;left:4px;right:4px}.battleheads>div{font-size:10px;padding:3px;max-width:140px}.healthbar{height:6px}
+ .controls{grid-template-columns:minmax(0,1fr) minmax(160px,40%);gap:6px;margin-top:3px;align-items:stretch}
+ .question{gap:2px;min-width:0;justify-content:space-evenly}
+ .question .steptrack{font-size:10px}.math{font-size:clamp(22px,4.5vw,32px);line-height:1}
+ .answer{font-size:19px;min-height:27px;padding:1px 6px}
+ .message{font-size:10px;min-height:0;line-height:1.15;max-height:30px;overflow:auto}
+ .question .btn{padding:3px 7px;font-size:10px;box-shadow:none}
+ .keypad{gap:3px;grid-template-rows:repeat(4,minmax(0,1fr))}
+ .keypad button{min-height:0;height:clamp(22px,6.1dvh,29px);padding:0;font-size:15px;line-height:1;box-shadow:none;border-radius:5px}
+ .actions{gap:4px;margin-top:3px}.actions .btn{padding:4px 8px;font-size:10px;box-shadow:none}
+ .boss-phase{margin:2px 0;padding:2px 6px;font-size:10px}
+ .panel>.steptrack{font-size:10px;line-height:1.15;margin-top:3px}
+ .foot{display:none}
+ .game-modal-backdrop,.defense-backdrop{padding:max(3px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(3px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+ .modal,.defense-box{padding:8px;max-height:96dvh;overflow:auto}
+ .modal h2,.defense-box h2{font-size:18px;margin:2px 0}
+ .defense-box p{margin:3px}.defense-box .math{font-size:25px}
+ .defense-keys{gap:3px}.defense-keys button{padding:5px 2px;font-size:14px}
+ .defense-box .answer{min-height:27px}
+ .hero-banner{height:60px}.hero-banner img{height:85px}
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1000px){
+ .scene{height:clamp(80px,27dvh,110px)}
+ .keypad button{height:clamp(20px,5.8dvh,25px)}
+ .app>.top{height:19px;min-height:19px}
+ .nav button{padding:3px 5px;font-size:9px}
+}
+
+/* v1.2: portrait-first phone, landscape tablet and positive learning feedback */
+.portrait{display:none!important}
+.correct-celebration{position:fixed;inset:0;z-index:1200;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.correct-celebration .correct-burst{position:relative;min-width:180px;padding:18px 24px;border:2px solid #ffe4a0;border-radius:24px;background:linear-gradient(135deg,#2a664ccf,#172c44ed);box-shadow:0 0 55px #f6ce7599;text-align:center;animation:reward-appear .95s ease-out forwards}
+.correct-burst strong{display:block;font-size:clamp(25px,7vw,46px);color:#fff3b8;text-shadow:0 3px 10px #000}.correct-burst span{display:block;font-size:clamp(14px,3vw,20px);color:#f5ffdc}.correct-celebration i{position:absolute;left:50%;top:50%;font-size:25px;font-style:normal;animation:reward-confetti .95s ease-out forwards;animation-delay:var(--delay)}
+@keyframes reward-appear{0%{opacity:0;transform:scale(.45) rotate(-7deg)}22%{opacity:1;transform:scale(1.13) rotate(2deg)}60%{transform:scale(1)}100%{opacity:0;transform:scale(1.05) translateY(-22px)}}
+@keyframes reward-confetti{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.8)}}
+@media(orientation:portrait) and (max-width:650px){
+ html,body{width:100%;min-height:100dvh;overflow-x:hidden}
+ .app{width:100%;max-width:520px;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+ .app>.top{margin-bottom:7px;gap:6px}.brand{font-size:clamp(16px,4.8vw,23px)}.pill{font-size:10px;padding:4px 7px;white-space:nowrap}
+ .nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:8px}
+ .nav button{min-width:0;width:100%;font-size:clamp(10px,2.7vw,12px);padding:7px 3px;box-shadow:none;line-height:1.15}
+ .panel{padding:10px;border-radius:12px}.panel>.top{margin-bottom:5px}
+ .scene{height:clamp(170px,29dvh,285px);border-radius:10px}
+ .hero,.enemy{height:84%;bottom:0;width:clamp(85px,28vw,145px)}
+ .hero{max-width:34%}.enemy{max-width:35%}.battleheads{top:4px;left:5px;right:5px}.battleheads>div{width:43%;font-size:10px;padding:4px}
+ .controls{display:flex;flex-direction:column;gap:7px;margin-top:7px}
+ .question{gap:4px;align-items:center;text-align:center}
+ .question .math{font-size:clamp(30px,9vw,43px);line-height:1.05}
+ .question .answer{width:100%;font-size:24px;min-height:38px;padding:3px 8px}
+ .question .message{min-height:0;font-size:12px;line-height:1.25}
+ .question .btn{padding:5px 12px;box-shadow:none}
+ .keypad{width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .keypad button{height:clamp(39px,6.4dvh,57px);min-height:39px;font-size:22px;border-radius:9px}
+ .actions{justify-content:center;gap:6px}.actions .btn{font-size:12px;padding:8px 10px}
+ .boss-phase{font-size:11px;padding:5px}.panel>.steptrack{font-size:11px;line-height:1.3}
+ .foot{font-size:10px;margin-top:8px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .world{padding:8px}.world .icon{font-size:26px}.world small{font-size:10px}
+ .defense-box{width:100%;max-height:calc(100dvh - 24px);padding:12px}
+ .defense-box h2{font-size:20px}.defense-keys{grid-template-columns:repeat(3,1fr);gap:6px}
+ .defense-keys button{min-height:40px;font-size:20px}.defense-box .math{font-size:34px}
+ .game-modal-backdrop{padding:12px}.modal{padding:13px;max-height:90dvh;overflow:auto}
+}
+@media(orientation:landscape) and (min-width:1001px){.app{max-width:1150px}.scene{height:clamp(220px,40vh,390px)}}
+@media(prefers-reduced-motion:reduce){.correct-celebration .correct-burst,.correct-celebration i{animation:none!important}.correct-celebration i{display:none}}
+.correct-burst em{display:block;font-style:normal;font-weight:900;margin-top:6px;color:#ffcc78}.correct-burst .bonus-label{font-size:clamp(15px,4vw,23px);color:#ffef99;text-shadow:0 0 12px #f5b744}.bonus-celebration .correct-burst{border-color:#ffe97b;box-shadow:0 0 70px #ffcb4e;animation:reward-bonus 1.2s ease-out forwards}.flying-coin{position:fixed;left:50%;top:54%;z-index:1400;font-size:25px;pointer-events:none;filter:drop-shadow(0 0 7px #ffd56d);animation:coin-to-hud .95s cubic-bezier(.2,.7,.2,1) forwards}.scene.reward-hop .hero{animation:reward-hop .65s ease-in-out!important;filter:drop-shadow(0 0 20px #ffe399)}@keyframes reward-hop{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-23px) rotate(-9deg)}65%{transform:translateY(-12px) rotate(7deg)}}@keyframes coin-to-hud{0%{opacity:0;transform:translate(0,0) scale(.4)}20%{opacity:1;transform:translate(0,-30px) scale(1.2)}100%{opacity:0;transform:translate(var(--coin-x),var(--coin-y)) scale(.35)}}@keyframes reward-bonus{0%{opacity:0;transform:scale(.4)}20%{opacity:1;transform:scale(1.2)}55%{transform:scale(1)}100%{opacity:0;transform:translateY(-20px)}}@media(prefers-reduced-motion:reduce){.flying-coin{display:none}.scene.reward-hop .hero{animation:none!important}}
+/* v1.4 Safari portrait: use actual visible viewport and keep input clear of browser chrome */
+@media(orientation:portrait) and (max-width:650px){
+ html{scroll-padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+ body{min-height:var(--visible-height,100dvh);padding-bottom:env(safe-area-inset-bottom,0px)}
+ .app{padding-top:max(4px,env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+ .app>.top{margin-bottom:4px}.brand{font-size:clamp(15px,4.5vw,20px)}
+ .nav{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;margin-bottom:5px}
+ .nav::-webkit-scrollbar{display:none}
+ .nav button{flex:0 0 auto;width:auto;min-width:0;white-space:nowrap;padding:6px 9px;font-size:11px}
+ .panel{padding:7px}.panel>.top{margin-bottom:3px}
+ .scene{height:clamp(110px,20dvh,170px)}
+ .hero,.enemy{height:94%;bottom:-4%}
+ .controls{gap:4px;margin-top:4px}
+ .question{gap:2px}
+ .question .math{font-size:clamp(27px,8vw,36px)}
+ .question .answer{min-height:30px;padding:2px 6px;font-size:21px}
+ .question .message{font-size:11px;line-height:1.15;max-height:42px;overflow-y:auto}
+ .question .btn{padding:3px 10px;font-size:11px}
+ .keypad{position:sticky;bottom:calc(4px + env(safe-area-inset-bottom,0px));z-index:12;gap:4px;padding:5px 3px calc(5px + env(safe-area-inset-bottom,0px));background:#172633;border:1px solid #4c6070;border-radius:10px;box-shadow:0 -5px 18px #08121ccc}
+ .keypad button{height:clamp(35px,5.2dvh,43px);min-height:35px;font-size:19px;border-radius:7px}
+ .actions{margin-top:3px}.actions .btn{padding:5px 8px}
+ .panel>.steptrack{margin:4px 0 0}
+ .foot{display:none}
+}
+@media(orientation:portrait) and (max-width:650px) and (max-height:740px){
+ .scene{height:clamp(95px,17dvh,130px)}
+ .keypad button{height:35px;min-height:35px}
+ .question .math{font-size:27px}
+}
+</style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="brand">⚔ Multiplikationsriket</div><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
+'use strict';
+const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
+const TYPES=['Goblin','Varg','Skelett','Rövare','Spindel','Golem','Troll','Skugga','Väktare','Drake'];const ARTS=['👺','🐺','💀','🥷','🕷️','🗿','👹','👻','🛡️','🐉'];
+const MONSTERS=Array.from({length:50},(_,i)=>({id:i+1,name:['Moss','Natt','Sten','Eld','Is'][Math.floor(i/10)]+' '+TYPES[i%10],art:ARTS[i%10],world:Math.min(7,Math.floor(i/7)),hp:25+(i%5)*7}));
+const ITEMS=[{id:'iron',name:'Järnsvärd',art:'🗡️',price:100,damage:5,slot:'weapon'},{id:'steel',name:'Stålsvärd',art:'⚔️',price:250,damage:10,slot:'weapon'},{id:'fire',name:'Eldsvärd',art:'🔥',price:500,damage:15,slot:'weapon'},{id:'helm',name:'Järnhjälm',art:'🪖',price:75,hp:10,slot:'helmet'},{id:'armor',name:'Riddarrustning',art:'🥋',price:200,hp:25,slot:'armor'},{id:'shield',name:'Runsköld',art:'🛡️',price:150,block:10,slot:'shield'},{id:'silver',name:'Silversvärd',art:'🗡️',price:380,damage:12,slot:'weapon'},{id:'dragonblade',name:'Draksvärd',art:'🐉',price:850,damage:22,slot:'weapon'},{id:'leather',name:'Läderharnesk',art:'🧥',price:90,hp:12,slot:'armor'},{id:'plate',name:'Plåtrustning',art:'🛡️',price:450,hp:45,slot:'armor'},{id:'crown',name:'Riddarhjälm',art:'👑',price:330,hp:20,slot:'helmet'},{id:'oakshield',name:'Eksköld',art:'🛡️',price:70,block:5,slot:'shield'}];
+const BOSS_SKILLS=[
+ {name:'Kungens klubba',icon:'🪓',effect:'stun',description:'Ett tungt slag skakar marken.'},
+ {name:'Benkaptenens förbannelse',icon:'💀',effect:'curse',description:'En kall förbannelse drar kraft ur hjälten.'},
+ {name:'Golemens jordskalv',icon:'🪨',effect:'quake',description:'Marken skakar under riddaren.'},
+ {name:'Trollets taggar',icon:'🌿',effect:'thorns',description:'Vassa grenar skjuter upp ur marken.'},
+ {name:'Eldjättens eldstorm',icon:'🔥',effect:'fire',description:'En våg av eld sveper över arenan.'},
+ {name:'Drakfurstens drakeld',icon:'🐉',effect:'dragon',description:'Draken andas en het eldkvast.'},
+ {name:'Skuggkungens mörker',icon:'🌑',effect:'shadow',description:'Skuggor slukar ljuset omkring dig.'},
+ {name:'Magikerns blixt',icon:'⚡',effect:'lightning',description:'Magiska blixtar slår ner.'}
+];
+function rescueIfNeeded(){if(s.hp<=0){s.hp=Math.min(maxHp(),50);return true}return false}
+function bossCounterattack(b,reason){
+ const special=b.phase===2&&(reason==='wrong'||(b.round||0)%2===0),skill=BOSS_SKILLS[s.world]||BOSS_SKILLS[0],damage=b.damage+(special?4:0);
+ const pool=WORLDS[s.world].hard,n=pool[Math.floor(Math.random()*pool.length)];
+ s.pendingDefense={a:WORLDS[s.world].n,b:n,damage,deadline:null,name:special?skill.name:'Bossens motattack',icon:special?skill.icon:'⚔️',effect:special?skill.effect:'',answer:''};
+ b.lastAttack=null;return '🛡️ BLOCKERA! Lös ett gångertal på 3 sekunder!';
+}
+let defenseTimer=null;
+function resolveDefense(blocked){
+ const d=s.pendingDefense;if(!d)return;clearInterval(defenseTimer);defenseTimer=null;document.getElementById('defense-modal')?.remove();
+ const block=blocked?d.damage:Math.min(ITEMS.find(i=>i.id===s.equipment.shield)?.block||0,d.damage),taken=d.damage-block;
+ if(!blocked){s.streak=0;s.hp=Math.max(0,s.hp-taken);let saved=rescueIfNeeded();notice=d.icon+' '+d.name+': −'+taken+' HP.'+(saved?' 🧙 Trollkarlen räddade dig!':'')}
+ else{notice='🛡️ Perfekt blockering! Ingen skada.';battleSound('guard')}
+ if(s.battle)s.battle.lastAttack={name:d.name,icon:d.icon,effect:d.effect,damage:taken,reason:'defense'};
+ s.pendingDefense=null;save();render();if(!blocked)animateCounter();else{combatFx('guard',null,0);correctReward('block',false,0)}
+}
+function defenseKey(k){let d=s.pendingDefense;if(!d)return;if(Date.now()>=d.deadline){resolveDefense(false);return}if(k==='✓'){resolveDefense(d.answer!==''&&Number(d.answer)===d.a*d.b);return}if(k==='⌫')d.answer=d.answer.slice(0,-1);else if(d.answer.length<3)d.answer+=k;let el=document.getElementById('defense-answer');if(el)el.textContent=d.answer||'＿'}
+function showDefense(){let d=s.pendingDefense;if(!d)return;if(d.deadline===null){d.deadline=Date.now()+5000;save()}if(Date.now()>=d.deadline){resolveDefense(false);return}if(document.getElementById('defense-modal'))return;
+ const o=document.createElement('div');o.className='defense-backdrop';o.id='defense-modal';
+ o.innerHTML='<div class="defense-box" role="dialog" aria-modal="true"><h2>🛡️ STOPPA BOSSEN!</h2><p>'+escapeHtml(d.icon+' '+d.name)+' · 5 sekunder!</p><div class="defense-time"><div id="defense-bar"></div></div><div class="math">'+d.a+' × '+d.b+' = ?</div><div class="answer" id="defense-answer">'+escapeHtml(d.answer||'＿')+'</div><div class="defense-keys">'+['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>'<button type="button" data-defense="'+k+'" class="'+(k==='✓'?'submit':'')+'">'+k+'</button>').join('')+'</div></div>';
+ document.body.appendChild(o);o.addEventListener('click',e=>{let k=e.target.closest('[data-defense]')?.dataset.defense;if(k)defenseKey(k)});
+ clearInterval(defenseTimer);defenseTimer=setInterval(()=>{if(!s.pendingDefense){clearInterval(defenseTimer);return}let remain=Math.max(0,s.pendingDefense.deadline-Date.now()),bar=document.getElementById('defense-bar');if(bar)bar.style.width=remain/50+'%';if(!remain)resolveDefense(false)},50);
+}
+function combatFx(kind,attack,damage){const scene=document.getElementById('scene'),fx=document.getElementById('battle-fx');if(!scene||!fx)return;const skill=attack?.effect||'';const element=['stun','curse','quake','thorns','fire','dragon','shadow','lightning'].includes(skill)?skill:'';scene.classList.remove('combat-impact','fx-fire','fx-dragon','fx-lightning','fx-shadow','fx-curse','fx-quake','fx-thorns','fx-stun');void scene.offsetWidth;if(element)scene.classList.add('fx-'+element);scene.classList.add('combat-impact');let icon=kind==='victory'?'🏆 ✨':kind==='guard'?'🛡️ ✨':attack?.icon||(kind==='hero'?'⚔️':'💥');let target=kind==='hero'?'enemy-hit':kind==='victory'?'victory':kind==='guard'?'guard-hit':'hero-hit';fx.innerHTML='<span class="burst '+target+'">'+escapeHtml(icon)+(damage!=null?' −'+damage:'')+'</span>';if(kind!=='victory'&&kind!=='guard'){for(let i=0;i<12;i++){let p=document.createElement('i');p.className='spark';p.style.setProperty('--x',(kind==='hero'?70:24)+'%');p.style.setProperty('--y','54%');p.style.setProperty('--sz',(3+i%4*2)+'px');p.style.setProperty('--dx',((i%4-1.5)*34)+'px');p.style.setProperty('--dy',((Math.floor(i/4)-1)*44)+'px');fx.appendChild(p)}}if(attack?.effect){let t=document.createElement('div');t.className='boss-telegraph';t.textContent=attack.name||'SPECIALATTACK';fx.appendChild(t)}if(kind==='victory')scene.classList.add('victory-glow');}
+function animateCounter(){
+ const enemy=document.getElementById('enemy'),hero=document.getElementById('hero'),fx=document.getElementById('effect');
+ enemy?.classList.remove('attack');void enemy?.offsetWidth;enemy?.classList.add('attack');
+ hero?.classList.remove('wounded');void hero?.offsetWidth;hero?.classList.add('wounded');
+ if(s.battle?.lastAttack){let a=s.battle.lastAttack;combatFx('enemy',a,a.damage);battleSound(a.effect||'hit')}
+}
+const STORE='multiplikationsriket-save-v1';function fresh(){return{version:1,world:0,step:0,phase:'travel',battle:null,level:1,xp:0,gold:0,hp:100,inventory:[],equipment:{},cards:[],math:{},cleared:[],question:null,answer:'',mistakes:0,hint:false,turn:0,charge:0,bossIndex:0,event:null,stats:{correct:0,assisted:0},rewarded:[],sound:true,pendingDefense:null,chest:null,streak:0,bestStreak:0}}function load(){try{let v=JSON.parse(localStorage.getItem(STORE));return v&&v.version===1?{...fresh(),...v}:fresh()}catch{return fresh()}}let s=load(),screen='home',busy=false,notice='';
+if(s.phase==='battle'&&!s.battle){s.phase='travel';s.question=null}
+if(s.phase==='travel'&&s.battle){s.phase='battle'}
+let audioCtx;function beep(freq=400){if(!s.sound)return;try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.type='triangle';g.gain.setValueAtTime(.04,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch{}}
+function battleSound(kind){if(!s.sound)return;try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();const now=audioCtx.currentTime;const seq=kind==='victory'?[[523,0,.13],[659,.15,.13],[784,.3,.22],[1046,.52,.35]]:kind==='lightning'?[[900,0,.08],[130,0.08,.16],[700,.19,.1]]:kind==='fire'||kind==='dragon'?[[130,0,.12],[90,.12,.18],[220,.28,.1]]:kind==='shadow'||kind==='curse'?[[300,0,.2],[210,.18,.2],[120,.35,.2]]:kind==='guard'?[[460,0,.08],[690,.1,.17]]:kind==='power'?[[260,0,.1],[420,.1,.1],[740,.22,.2]]:kind==='phase'?[[220,0,.14],[330,.16,.14],[440,.32,.25]]:[[190,0,.08],[125,.09,.13]];seq.forEach(([hz,delay,duration])=>{let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=kind==='victory'?'sine':'triangle';o.frequency.setValueAtTime(hz,now+delay);g.gain.setValueAtTime(.0001,now+delay);g.gain.exponentialRampToValueAtTime(.045,now+delay+.015);g.gain.exponentialRampToValueAtTime(.0001,now+delay+duration);o.connect(g);g.connect(audioCtx.destination);o.start(now+delay);o.stop(now+delay+duration+.02)})}catch{}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(s))}catch{notice='Kunde inte spara. Exportera en säkerhetskopia.'}}function xp(n){s.xp+=n;while(s.xp>=s.level*90){s.xp-=s.level*90;s.level++;notice='⭐ Nivå '+s.level+'!';s.hp=maxHp()}}function maxHp(){return 100+Object.values(s.equipment).reduce((a,id)=>a+(ITEMS.find(i=>i.id===id)?.hp||0),0)}function dmg(){return 15+(ITEMS.find(i=>i.id===s.equipment.weapon)?.damage||0)}function escapeHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function nav(){return [['home','🏠 Hem'],['map','🗺️ Karta'],['game','⚔️ Spela'],['shop','⚒️ Smedjan'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${screen===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
+function render(){document.getElementById('nav').innerHTML=nav();document.getElementById('hud').textContent=`Nivå ${s.level} · 🪙 ${s.gold} · ❤️ ${s.hp}/${maxHp()}`;document.getElementById('main').innerHTML=({home:home,map:map,game:game,shop:shop,cards:cards,mastery:mastery,settings:settings})[screen]();}
+function home(){return `<div class="panel"><h1 class="title">Riddarens resa</h1><p>Från enkel äventyrare till rikets mäktigaste riddare. Utforska åtta världar, lär dig gångertabellerna 2–9 och samla 50 monsterkort!</p><div class="hero-banner">${heroVisual()}</div><p class="steptrack">🛡️ ${escapeHtml(equipmentSummary())}</p><p><b>Nuvarande värld:</b> ${WORLDS[s.world].name} · <b>Steg:</b> ${s.step}/12 · <b>Monsterkort:</b> ${s.cards.length}/50</p><div class="progress"><div style="width:${Math.min(100,s.xp/(s.level*90)*100)}%"></div></div><p class="steptrack">XP ${s.xp}/${s.level*90} till nästa nivå · 🔥 ${s.streak||0} rätt i rad · Rekord: ${s.bestStreak||0}</p><div class="actions"><button class="btn" data-nav="game">▶ ${s.step||s.battle?'Fortsätt äventyret':'Starta äventyret'}</button><button class="btn secondary" data-nav="map">Välj värld</button><button class="btn secondary" data-nav="mastery">📊 Mina framsteg</button></div><p class="hint">💡 Inga tidtagningar. Fel svar ger ledtrådar. Varje steg sparas.</p></div>`}
+function factStats(a,b){return s.math[a+'x'+b]||{right:0,independent:0,level:0,days:[],errors:0}}
+function factLevel(a,b){return Math.max(0,Math.min(3,Number(factStats(a,b).level)||0))}
+function tableProgress(n){let levels=Array.from({length:10},(_,i)=>factLevel(n,i+1));return {known:levels.filter(x=>x>=2).length,mastered:levels.filter(x=>x===3).length,started:levels.filter(x=>x>0).length}}
+function mastery(){let all=WORLDS.map(w=>tableProgress(w.n));let known=all.reduce((sum,x)=>sum+x.known,0),mastered=all.reduce((sum,x)=>sum+x.mastered,0);return `<div class="panel"><h2 class="title">📊 Din matteträning</h2><p>Du tränar 80 gångertal i tabellerna 2–9. Tal som du har svårt för kommer tillbaka oftare. Du behöver inte vara snabb.</p><div class="mastery-banner">⭐ ${known}/80 tal väl inövade · 🏅 ${mastered}/80 befästa över flera dagar</div><div class="mastery-grid">${WORLDS.map(w=>{let p=tableProgress(w.n);return `<div class="mastery-tile"><h3>${w.emoji} ${w.n}:ans tabell</h3><small>${p.known}/10 väl inövade · ${p.mastered}/10 befästa</small><div class="progress"><div style="width:${p.known*10}%"></div></div><div class="fact-grid">${Array.from({length:10},(_,i)=>{let b=i+1,l=factLevel(w.n,b),st=factStats(w.n,b);return `<div class="fact ${l>=2?'known':l===1?'learning':st.errors?'weak':''}" title="${w.n} × ${b}: ${st.independent||0} rätt utan hjälp, ${st.errors||0} fel">${w.n}×${b}<div>${l===3?'🏅':l===2?'✓':l===1?'•':st.errors?'↻':'–'}</div></div>`}).join('')}</div><p class="steptrack">${p.mastered===10?'🏆 Tabellen befäst!':p.known===10?'✨ Alla tal väl inövade!':'Fortsätt träna för att bemästra tabellen.'}</p></div>`}).join('')}</div><p class="hint">• = börjat lära · ✓ = minst 3 självständiga rätt · 🏅 = minst 5 självständiga rätt på minst två olika dagar · ↻ = behöver övas.</p></div>`}
+function map(){return `<div class="panel"><h2 class="title">🗺️ Rikets åtta världar</h2><p>Varje boss tränar 2–3 särskilt utmanande gångertal.</p><div class="grid">${WORLDS.map((w,i)=>{let unlocked=i===0||s.cleared.includes(i-1);return `<button class="world ${s.world===i?'active':''}" ${unlocked?'':'disabled'} data-world="${i}"><div class="icon">${unlocked?w.emoji:'🔒'}</div><b>${i+1}. ${w.name}</b><br><small>${w.n}:ans tabell · Boss: ${w.boss}</small><br><small>Bossfrågor: ${w.hard.map(v=>w.n+'×'+v).join(', ')}</small><br><small>${s.cleared.includes(i)?'🏆 Avklarad':unlocked?'▶ Spelbar':'Lås upp föregående värld'}</small></button>`}).join('')}</div></div>`}
+function chooseQuestion(boss=false){let w=WORLDS[s.world],pool=s.chest?[s.chest.question.b]:boss?w.hard:[1,2,3,4,5,6,7,8,9,10];let previous=s.question?.b;let b;if(s.chest){b=pool[0]}else if(boss){b=pool[s.bossIndex%pool.length];s.bossIndex++}else{let options=pool.filter(n=>n!==previous);if(!options.length)options=pool;let weights=options.map(n=>{let st=factStats(w.n,n),lvl=factLevel(w.n,n);let weight=[6,4,2,1][lvl];weight+=Math.min(5,st.errors||0);if(st.lastWrong)weight+=2;return weight});let total=weights.reduce((a,v)=>a+v,0),roll=Math.random()*total;b=options[options.length-1];for(let i=0;i<options.length;i++){roll-=weights[i];if(roll<0){b=options[i];break}}}s.question={a:w.n,b};s.answer='';s.mistakes=0;s.hint=false;save()}
+function questionUI(){if(!s.question)chooseQuestion(s.phase==='battle'&&s.battle?.boss);let q=s.question;return `<div class="controls"><div class="question"><div class="steptrack">${s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)} ${s.hint?`<span class="hint">Räkna: ${Array.from({length:q.b},()=>q.a).join(' + ')} = ?</span>`:''}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
+function rarity(id){return id%25===0?'Legendarisk':id%10===0?'Episk':id%4===0?'Sällsynt':'Vanlig'}
+function equipmentSummary(){return ['weapon','helmet','armor','shield'].map(slot=>ITEMS.find(i=>i.id===s.equipment[slot])).filter(Boolean).map(i=>i.art+' '+i.name).join(' · ')||'Äventyrarens startutrustning'}
+function gearOverlay(){let e=s.equipment;let weapon=e.weapon,helmet=e.helmet,armor=e.armor,shield=e.shield;if(!weapon&&!helmet&&!armor&&!shield)return '';let blade=weapon==='dragonblade'?'#f16a39':weapon==='fire'?'#ffb32c':weapon==='silver'?'#d9ecf4':weapon==='steel'?'#a9c7dc':'#c3c4bd';let metal=armor==='plate'?'#c2d3e2':armor==='armor'?'#899fb2':'#805d40';return `<svg class="gear-overlay" viewBox="0 0 256 256" aria-hidden="true">${armor?`<path d="M101 112 L155 112 L163 171 Q127 187 91 168 Z" fill="${metal}" stroke="#e5c891" stroke-width="5"/><path d="M127 118 L127 172 M100 141 L156 141" stroke="#344453" stroke-width="5"/>`:''}${helmet?`<path d="M93 78 Q91 34 127 30 Q163 34 161 79 L155 99 L100 99Z" fill="${helmet==='crown'?'#c8a54b':'#8fa2af'}" stroke="#f1d58a" stroke-width="5"/><path d="M99 79 L156 79" stroke="#182b38" stroke-width="9"/>`:''}${shield?`<path d="M57 144 L96 144 L103 194 Q82 220 61 207 Q47 185 57 144Z" fill="${shield==='oakshield'?'#8a6035':'#5276a0'}" stroke="#e5c78a" stroke-width="6"/><path d="M78 152 L78 203 M60 177 L97 177" stroke="#f3dca2" stroke-width="5"/>`:''}${weapon?`<g transform="translate(0 0)"><path d="M183 174 L211 190" stroke="#d7b477" stroke-width="9" stroke-linecap="round"/><path d="M193 176 L224 118 L233 63 L207 108 L183 172 Z" fill="${blade}" stroke="#f8f0cf" stroke-width="3"/><path d="M181 170 L214 186" stroke="#b99151" stroke-width="8"/>${weapon==='fire'||weapon==='dragonblade'?'<path d="M211 133 Q202 115 222 91 Q216 115 233 109 Q229 129 211 133" fill="#ff7834" opacity=".85"/>':''}</g>`:''}</svg>`}
+function heroVisual(){return '<div class="hero-visual"><img src="'+heroImage()+'" alt="Din riddare">'+gearOverlay()+'</div>'}
+function heroImage(){return 'assets/'+(s.equipment.armor||s.level>=5?'knight':'adventurer')+'.svg'}
+function monsterImage(b){let card=b?.card||1;return 'assets/monster-'+((card-1)%10)+'.svg'}
+function scene(){let b=s.battle;let palette=['#efbf65','#b4e8de','#c9a17b','#8cc66e','#ff733b','#ff9a47','#a88be0','#9dc8ff'];return `<div class="scene" id="scene" style="--world-bg:url('assets/world-${WORLDS[s.world].n}.svg')"><div class="scene-bg"></div><div class="scene-fog"></div>${b?.boss?`<div class="boss-aura ${b.phase===2?'phase-two':''}" style="--boss-glow:${palette[s.world]}88"></div><div class="boss-rune" style="--boss-rune:${palette[s.world]};color:${palette[s.world]}"></div>`:''}${!b?`<div class="travel-marker">${s.step===6?'📦':s.step>=10?'🏰':'🌲'}</div><div class="travel-progress"><div style="width:${s.step/12*100}%"></div></div>`:''}<div class="hero-spot"></div><div class="hero" id="hero" title="${escapeHtml(equipmentSummary())}" style="left:${b?'16%':Math.min(53,12+s.step*3.5)+'%'}">${heroVisual()}</div>${b?`<div class="enemy" id="enemy"><img src="${monsterImage(b)}" alt="${escapeHtml(b.name)}"></div><div class="battleheads"><div>🛡️ Hjälten<div class="healthbar"><div style="width:${100*s.hp/maxHp()}%;background:#5caa77"></div></div></div><div>${escapeHtml(b.name)}<div class="healthbar"><div style="width:${100*b.hp/b.maxHp}%"></div></div></div></div>`:''}<div id="effect"></div><div class="battle-fx" id="battle-fx" aria-hidden="true"></div></div>`}
+function game(){let w=WORLDS[s.world];return `<div class="panel"><div class="top"><b>${w.emoji} ${w.name}</b><span class="steptrack">${s.phase==='battle'?'STRID':`STEG ${s.step}/12`}</span></div>${scene()}${s.phase==='battle'&&s.battle?.boss?'<div class="boss-phase">👑 BOSS · Fas '+(s.battle.phase||1)+'/2 · '+(s.battle.phase===2?'⚡ '+BOSS_SKILLS[s.world].name:'Vid halva hälsan väcks bossens kraft')+'</div>':''}${s.phase==='battle'?`<div class="actions">${[['slash','⚔️ Svärd '+dmg()],['power','💥 Kraft '+(dmg()+20)+' (2 tal)']].map(([a,l])=>`<button class="btn ${s.battle?.move===a?'':'secondary'} small" data-move="${a}" ${s.battle?.pending?'disabled':''}>${l}</button>`).join('')}</div>`:''}${s.event?'<p class="hint">🎁 En händelse väntar. Tryck på Fortsätt.</p>':s.phase==='battle'&&!s.battle?.move?'<p class="hint">Välj din attack för att få en matteuppgift.</p>':questionUIIfReady()}<div class="steptrack">${s.phase==='battle'?s.battle?.boss?'👑 Blockera bossens attacker med ett rätt svar inom 5 sekunder!':'Fienden anfaller ibland efter din tur.':'Lös tal för att röra dig framåt. Händelser väntar längs vägen.'}</div></div>`}
+function questionUIIfReady(){return s.event||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
+function shop(){return `<div class="panel"><h2 class="title">⚒️ Smedjan · 🪙 ${s.gold}</h2><p>Utrustningen gör riddaren starkare. Inga riktiga pengar används.</p><p class="hint">Nu utrustad: ${escapeHtml(equipmentSummary())}</p><div class="hero-banner">${heroVisual()}</div><div class="grid">${ITEMS.map(i=>`<div class="shopitem"><div class="art">${i.art}</div><b>${i.name}</b><div>${i.damage?'+'+i.damage+' skada':i.hp?'+'+i.hp+' max HP':'+'+i.block+' sköld'}</div><small>${s.inventory.includes(i.id)?'Ägd':'🪙 '+i.price}</small><div class="actions"><button class="btn small" data-buy="${i.id}" ${s.inventory.includes(i.id)||s.gold<i.price?'disabled':''}>Köp</button><button class="btn secondary small" data-equip="${i.id}" ${!s.inventory.includes(i.id)||s.equipment[i.slot]===i.id?'disabled':''}>${s.equipment[i.slot]===i.id?'Utrustad':'Utrusta'}</button></div></div>`).join('')}</div></div>`}
+function cards(){let total=MONSTERS.length,owned=MONSTERS.filter(m=>s.cards.includes(m.id));let byWorld=WORLDS.map((w,i)=>{let all=MONSTERS.filter(m=>m.world===i),got=all.filter(m=>s.cards.includes(m.id));return '<span class="pill">'+w.emoji+' '+got.length+'/'+all.length+'</span>'}).join(' ');return `<div class="panel"><h2 class="title">📖 Monsterboken ${owned.length}/${total}</h2><p>Besegra monster för att låsa upp deras kort. Återvänd till tidigare världar via kartan för att samla de kort du saknar. Monster väljs i första hand bland oupptäckta kort i världen.</p><p>${byWorld}</p><p class="hint">✨ Vanlig · 💠 Sällsynt · 💜 Episk · 🟡 Legendarisk. Kortens sällsynthet påverkar samlingen, inte matematiken.</p><div class="cards">${MONSTERS.map(m=>{let has=s.cards.includes(m.id),tier=rarity(m.id);return `<div class="monster ${has?'':'locked'}" ${has?'data-card="'+m.id+'" role="button" tabindex="0"':''} title="${has?escapeHtml(m.name):'Besegra monster i '+escapeHtml(WORLDS[m.world].name)}"><div class="art">${has?`<img src="assets/monster-${(m.id-1)%10}.svg" alt="">`:'❔'}</div><b>${has?escapeHtml(m.name):'Okänd'}</b><div class="steptrack">#${String(m.id).padStart(2,'0')} · ${has?tier:'Låst'}</div><div class="steptrack">${WORLDS[m.world].name}</div></div>`}).join('')}</div></div>`}
+function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2><p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.4 · Safari-anpassad mobilhöjd · femsekundersblockering och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
+function battleAt(step){
+ if(s.phase==='battle'||s.event)return;
+ let boss=step===12;let candidates=MONSTERS.filter(m=>m.world===s.world);
+ let unseen=candidates.filter(m=>!s.cards.includes(m.id));let selected=unseen.length?unseen[0]:candidates[s.turn%candidates.length];
+ s.turn++;let m=selected;
+ s.battle={name:boss?WORLDS[s.world].boss:m.name,art:boss?WORLDS[s.world].bossArt:m.art,hp:boss?90:step===8?40:30,maxHp:boss?90:step===8?40:30,damage:boss?10:step===8?7:5,boss,card:m.id,move:null,pending:0,guard:0,phase:1,round:0,weakpoints:[],specialUsed:false,lastAttack:null};
+ s.phase='battle';s.question=null;s.answer='';if(boss)s.bossIndex=0;
+ notice=boss?'👑 Bossen har tre svåra tal!':'Ett monster blockerar vägen!';save();render();
+}
+function travelAnimation(){let el=document.getElementById('scene');if(!el)return;el.classList.add('travel-moving');setTimeout(()=>el.classList.remove('travel-moving'),900)}
+function correctReward(kind,assisted,bonus=0){
+ const labels=kind==='block'?['🛡️ PERFEKT BLOCKERING!','✨ Bossens attack stoppades!']:kind==='chest'?['🔓 KISTAN ÖPPNAD!','🪙 +30 guld · ⭐ +10 XP']:kind==='travel'?['✨ '+(assisted?'BRA KÄMPAT!':'SNYGGT!'),'👣 Ett steg närmare bossen · +3 XP']:kind==='power'?['💥 KRAFTATTACK!','⚔️ Fantastiskt räknat!']:['⚔️ '+(assisted?'BRA KÄMPAT!':'FULLTRÄFF!'),'⭐ Rätt gångertal!'];
+ document.getElementById('correct-reward')?.remove();
+ const el=document.createElement('div');el.id='correct-reward';el.className='correct-celebration';el.setAttribute('aria-live','polite');
+ el.innerHTML='<div class="correct-burst"><strong>'+labels[0]+'</strong><span>'+labels[1]+'</span>'+(s.streak>=2?'<em class="streak-label">🔥 '+s.streak+' rätt i rad!</em>':'')+(bonus?'<em class="bonus-label">🎉 KOMBOBONUS! +10 🪙 +10 XP</em>':'')+'</div>';if(bonus){el.classList.add('bonus-celebration');coinFlight()}
+ for(let i=0;i<14;i++){let p=document.createElement('i');p.textContent=['✨','⭐','💫','🟡'][i%4];p.style.setProperty('--dx',Math.round(Math.cos(i*Math.PI/7)*Math.min(innerWidth*.42,210))+'px');p.style.setProperty('--dy',Math.round(Math.sin(i*Math.PI/7)*170)+'px');p.style.setProperty('--rot',i*41+'deg');p.style.setProperty('--delay',i%3*35+'ms');el.appendChild(p)}
+ document.body.appendChild(el);let scene=document.getElementById('scene');scene?.classList.add('reward-hop');setTimeout(()=>scene?.classList.remove('reward-hop'),700);setTimeout(()=>el.remove(),bonus?1250:1050);
+ if(s.sound){try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();const now=audioCtx.currentTime;[523,659,784].forEach((f,i)=>{let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,now+i*.09);g.gain.exponentialRampToValueAtTime(.055,now+i*.09+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.09+.21);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.09);o.stop(now+i*.09+.22)})}catch{}}
+}
+function coinFlight(){const hud=document.getElementById('hud');if(!hud)return;const end=hud.getBoundingClientRect();for(let i=0;i<8;i++){let coin=document.createElement('span');coin.className='flying-coin';coin.textContent='🪙';coin.style.setProperty('--coin-x',Math.round(end.left+end.width/2-innerWidth/2+(i-3)*7)+'px');coin.style.setProperty('--coin-y',Math.round(end.top+end.height/2-innerHeight*.54)+'px');coin.style.animationDelay=i*65+'ms';document.body.appendChild(coin);setTimeout(()=>coin.remove(),1250)}}
+function doStep(){
+ if(s.phase!=='travel'||s.event)return;
+ s.step++;xp(3);s.question=null;notice='Bra! Ett steg närmare borgen.';
+ if([4,8,12].includes(s.step)){
+  save();render();travelAnimation();
+  // Transition happens after the walk; on reload it is recovered from step.
+  setTimeout(()=>{if(s.phase==='travel'&&!s.event&&[4,8,12].includes(s.step))battleAt(s.step)},900);
+ }else if(s.step===6){
+  if(!s.rewarded.includes('chest-'+s.world)){s.chest={world:s.world,question:{a:WORLDS[s.world].n,b:WORLDS[s.world].hard[0]}};notice='🔒 Skattkistan är låst! Lös gångertalet.';chooseQuestion()}else notice='📦 Kistan är redan öppnad.';save();render();travelAnimation();
+ }else{save();render();travelAnimation()}
+ beep(520);
+}
+function modal(title,body,done){
+ document.getElementById('game-modal')?.remove();
+ let o=document.createElement('div');o.className='game-modal-backdrop';o.id='game-modal';
+ o.innerHTML='<div class="modal" role="dialog" aria-modal="true"><h2>'+escapeHtml(title)+'</h2><p>'+escapeHtml(body)+'</p><button class="btn" id="modal-continue">Fortsätt</button></div>';
+ document.body.appendChild(o);
+ o.querySelector('button').addEventListener('click',()=>{o.remove();done?.()},{once:true});
+}
+function showPendingEvent(){
+ if(!s.event)return;
+ modal(s.event.title,s.event.body,()=>{s.event=null;notice='';save();render()});
+}
+function recoverGame(){
+ if(s.pendingDefense){showDefense();return}
+ if(s.event){showPendingEvent();return}
+ if(s.phase==='travel'&&[4,8,12].includes(s.step)&&!s.battle){battleAt(s.step);return}
+ if(s.phase==='battle'&&s.battle&&s.battle.hp<=0){winBattle();return}
+ if(s.phase==='battle'&&s.battle&&s.battle.move&&!s.question){chooseQuestion(!!s.battle.boss);save();render()}
+}
+
+function recordMath(correct,assisted){let q=s.question,key=q.a+'x'+q.b;let st=s.math[key]||{right:0,independent:0,level:0,days:[],errors:0};if(correct){st.right++;st.lastWrong=false;if(!assisted){st.independent++;let day=new Date().toISOString().slice(0,10);if(!st.days.includes(day))st.days.push(day)}st.level=st.independent>=5&&st.days.length>=2?3:st.independent>=3?2:1;s.stats[assisted?'assisted':'correct']++}else{st.errors=(st.errors||0)+1;st.lastWrong=true} s.math[key]=st}
+function answer(){
+ if(busy||s.event||s.pendingDefense||!s.question||!s.answer)return;
+ let ok=Number(s.answer)===s.question.a*s.question.b;
+ if(!ok){
+  recordMath(false,false);s.streak=0;s.mistakes++;s.answer='';s.hint=true;
+  let b=s.battle;
+  notice=s.mistakes===1?'Nästan! Titta på ledtråden och försök igen.':'Fortsätt försöka! Du kan räkna med addition.';
+  if(b?.boss){
+   // Every wrong boss answer causes exactly one counterattack. No second damage on the same attempt.
+   notice+=' '+bossCounterattack(b,'wrong');beep(150);
+  }else if(s.mistakes===2&&b){
+   s.hp=Math.max(0,s.hp-b.damage);let saved=rescueIfNeeded();beep(150);
+   notice+=' Fienden gjorde '+b.damage+' skada.'+(saved?' 🧙 Trollkarlen räddade dig!':'');
+  }
+  save();render();if(b?.boss)showDefense();else if(b&&s.mistakes===2){document.getElementById('enemy')?.classList.add('attack');document.getElementById('hero')?.classList.add('wounded');combatFx('enemy',{icon:'💥'},b.damage)}return;
+ }
+ let assisted=s.hint||s.mistakes>0;recordMath(true,assisted);let streakBonus=0;if(!assisted){s.streak=(s.streak||0)+1;s.bestStreak=Math.max(s.bestStreak||0,s.streak);if(s.streak%5===0){streakBonus=10;s.gold+=10;xp(10)}}else s.streak=0;
+ notice=assisted?'Bra kämpat!':'Perfekt träff!';
+ if(s.phase==='travel'){if(s.chest){let chest=s.chest;s.gold+=30;xp(10);s.rewarded.push('chest-'+chest.world);s.chest=null;s.event={type:'chest',title:'🎁 Kistan öppnades!',body:'Rätt svar! Du fick 30 guld och 10 XP.'};save();render();showPendingEvent();correctReward('chest',assisted,streakBonus);return}doStep();correctReward('travel',assisted,streakBonus);return}
+ const b=s.battle;if(!b||!b.move)return;
+ if(b.move==='power'){b.pending++;if(b.pending<2){s.question=null;chooseQuestion(b.boss);notice='Bra! En fråga till för kraftattacken.';save();render();correctReward('power',assisted,streakBonus);return}}
+ let damage=b.move==='power'?dmg()+20:dmg();
+ if(assisted&&damage)damage=Math.max(8,damage-5);
+ 
+ b.hp=Math.max(0,b.hp-damage);s.question=null;s.answer='';
+ // Resolve the entire combat turn before animation. Reloading during animation is safe.
+ if(b.hp>0){
+  b.round=(b.round||0)+1;
+  if(b.boss&&b.hp<=b.maxHp*.5&&b.phase===1){
+   b.phase=2;b.damage+=3;
+   notice='🔥 FAS 2! '+b.name+' får en ny specialattack. ';battleSound('phase');
+  }else notice='';
+  if(b.boss){notice+=bossCounterattack(b,'turn')}
+  else{
+   let taken=Math.max(0,b.damage-b.guard);b.guard=0;s.hp=Math.max(0,s.hp-taken);
+   let saved=rescueIfNeeded();notice+=taken?'Fienden slog tillbaka: -'+taken+' HP.':'Du blockerade attacken!';
+   if(saved)notice+=' 🧙 Trollkarlen räddade dig!';
+  }
+ }
+ const defeated=b.hp<=0;const action=b.move;b.move=null;b.pending=0;
+ save();render();busy=true;correctReward(action==='power'?'power':'hit',assisted,streakBonus);
+ document.getElementById('hero')?.classList.add(action==='guard'?'guard':'hit');
+ if(damage){document.getElementById('enemy')?.classList.add('hurt');combatFx('hero',{icon:action==='power'?'💥⚔️':'⚔️'},damage);battleSound(action==='power'?'power':'hit')}else{combatFx('guard',null,null);battleSound('guard')}
+ beep(650);
+ setTimeout(()=>{if(defeated){combatFx('victory',null,null);document.getElementById('enemy')?.classList.add('dead');battleSound('victory');setTimeout(()=>{busy=false;winBattle()},850)}else{busy=false;render();if(b.boss)showDefense();else{document.getElementById('enemy')?.classList.add('attack');document.getElementById('hero')?.classList.add('wounded');combatFx('enemy',{icon:'💥'},Math.max(0,b.damage-(action==='guard'?15+(ITEMS.find(i=>i.id===s.equipment.shield)?.block||0):0)))}}},850);
+}
+function winBattle(){
+ let b=s.battle;if(!b)return;
+ if(!s.cards.includes(b.card))s.cards.push(b.card);
+ let gold=b.boss?100:15,earned=b.boss?75:20;
+ s.gold+=gold;xp(earned);s.battle=null;s.phase='travel';s.question=null;s.hp=Math.min(maxHp(),s.hp+20);
+ if(b.boss){
+  if(!s.cleared.includes(s.world))s.cleared.push(s.world);
+  let old=s.world;s.step=0;if(old<7)s.world=old+1;
+  s.event={type:'victory',title:'🏆 '+WORLDS[old].boss+' besegrad!',body:'Du fick '+gold+' guld, '+earned+' XP och ett monsterkort! '+(old<7?'Nästa värld upplåst!':'Du räddade riket!')};
+  screen='map';save();render();showPendingEvent();
+ }else{
+  s.event={type:'victory',title:'⚔️ Seger!',body:'Monster besegrat! +'+gold+' guld, +'+earned+' XP och ett monsterkort!'};
+  save();render();showPendingEvent();
+ }
+}
+function move(a){if(!s.battle||busy||s.event||s.pendingDefense)return;s.battle.move=a;s.battle.pending=0;s.question=null;chooseQuestion(s.battle.boss);notice=a==='power'?'Två rätta svar laddar kraftattacken.':'Lös ett tal för att attackera.';save();render()}
+function key(k){if(busy||s.event||s.pendingDefense)return;if(k==='✓'){answer();return}if(k==='⌫')s.answer=s.answer.slice(0,-1);else if(s.answer.length<3)s.answer+=k;save();render()}
+function exportSave(){let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='multiplikationsriket-sparfil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+document.addEventListener('click',e=>{if(s.pendingDefense)return;let b=e.target.closest('[data-nav],[data-world],[data-key],[data-move],[data-buy],[data-equip],[data-action],[data-card]');if(!b)return;if(b.dataset.nav){screen=b.dataset.nav;notice='';if(screen==='game'&&s.phase==='travel'&&!s.question&&!s.event&&!([4,8,12].includes(s.step)))chooseQuestion();render();if(screen==='game')recoverGame()}else if(b.dataset.world!==undefined){let i=Number(b.dataset.world);if(i===0||s.cleared.includes(i-1)){s.world=i;s.step=0;s.event=null;s.chest=null;s.phase='travel';s.battle=null;s.question=null;save();screen='game';chooseQuestion();render()}}else if(b.dataset.card){let m=MONSTERS.find(x=>x.id===Number(b.dataset.card));if(m&&s.cards.includes(m.id))modal('📖 '+m.name,'Kort #'+m.id+' · '+rarity(m.id)+' · '+WORLDS[m.world].name+' · '+m.hp+' HP',()=>{});}else if(b.dataset.key)key(b.dataset.key);else if(b.dataset.move)move(b.dataset.move);else if(b.dataset.buy){let i=ITEMS.find(x=>x.id===b.dataset.buy);if(i&&s.gold>=i.price&&!s.inventory.includes(i.id)){s.gold-=i.price;s.inventory.push(i.id);s.equipment[i.slot]=i.id;s.hp=Math.min(maxHp(),s.hp+(i.hp||0));save();render()}}else if(b.dataset.equip){let i=ITEMS.find(x=>x.id===b.dataset.equip);if(i&&s.inventory.includes(i.id)){s.equipment[i.slot]=i.id;s.hp=Math.min(s.hp,maxHp());save();render()}}else if(b.dataset.action==='hint'){s.hint=true;notice='Du kan använda upprepad addition.';save();render()}else if(b.dataset.action==='sound'){s.sound=!s.sound;save();render()}else if(b.dataset.action==='export')exportSave();else if(b.dataset.action==='reset'){if(confirm('Vill du verkligen radera alla framsteg?')){s=fresh();save();screen='home';render()}}});
+document.addEventListener('change',async e=>{if(e.target.id!=='import')return;try{let imported=JSON.parse(await e.target.files[0].text());if(imported.version!==1||!Array.isArray(imported.cards)||!Array.isArray(imported.cleared)||!imported.math||!Number.isInteger(imported.world)||imported.world<0||imported.world>7)throw Error('Fel format');if(confirm('Ersätt dina nuvarande framsteg med sparfilen?')){s={...fresh(),...imported};save();screen='home';render()}}catch{alert('Kunde inte läsa sparfilen.')}});
+function syncVisibleViewport(){const h=window.visualViewport?.height||window.innerHeight;document.documentElement.style.setProperty('--visible-height',h+'px')}syncVisibleViewport();window.visualViewport?.addEventListener('resize',syncVisibleViewport);window.addEventListener('orientationchange',syncVisibleViewport);
+render();if(s.pendingDefense)showDefense();else if(s.event)showPendingEvent();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>
