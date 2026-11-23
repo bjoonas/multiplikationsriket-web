@@ -820,33 +820,37 @@ const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:
 const TYPES=['Goblin','Varg','Skelett','Rövare','Spindel','Golem','Troll','Skugga','Väktare','Drake'];const ARTS=['👺','🐺','💀','🥷','🕷️','🗿','👹','👻','🛡️','🐉'];
 const MONSTERS=Array.from({length:50},(_,i)=>({id:i+1,name:['Moss','Natt','Sten','Eld','Is'][Math.floor(i/10)]+' '+TYPES[i%10],art:ARTS[i%10],world:Math.min(7,Math.floor(i/7)),hp:25+(i%5)*7}));
 const ITEMS = [
-  { id:'trainingblade', name:'Övningssvärd', art:'🗡️', slot:'weapon', world:0, price:0, damage:0, look:'training', shopOnly:true },
-  { id:'trainingvest', name:'Träningsväst med mantel', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'training' },
-  { id:'traininghelm', name:'Övningshjälm', art:'🪖', slot:'helmet', world:0, price:25, hp:10, look:'training' },
-  { id:'trainingshield', name:'Rund träsköld', art:'🛡️', slot:'shield', world:0, price:35, block:5, look:'training' },
+  { id:'trainingblade', name:'Övningssvärd', art:'🗡️', slot:'weapon', world:0, price:0, damage:0, look:'training', shopOnly:true, forge:true },
+  { id:'trainingvest', name:'Läderväst med mantel', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'training', forge:true },
+  { id:'traininghelm', name:'Övningshjälm', art:'🪖', slot:'helmet', world:0, price:25, hp:10, look:'training', forge:true },
+  { id:'trainingshield', name:'Rund träsköld', art:'🛡️', slot:'shield', world:0, price:35, block:5, look:'training', forge:true },
   { id:'iron', name:'Järnsvärd', art:'🗡️', slot:'weapon', world:1, price:95, damage:5 },
-  { id:'steel', name:'Stålsvärd', art:'⚔️', slot:'weapon', world:2, price:145, damage:10 },
+  { id:'steel', name:'Stålsvärd', art:'⚔️', slot:'weapon', world:2, price:145, damage:10, forge:true },
   { id:'silver', name:'Silversvärd', art:'🗡️', slot:'weapon', world:3, price:200, damage:15 },
   { id:'fire', name:'Eldsvärd', art:'🔥', slot:'weapon', world:4, price:265, damage:20 },
   { id:'dragonblade', name:'Draksvärd', art:'🐉', slot:'weapon', world:5, price:335, damage:25 },
   { id:'dawnblade', name:'Gryningssvärd', art:'🌅', slot:'weapon', world:6, price:415, damage:30 },
   { id:'runeblade', name:'Runsvärd', art:'⚔️', slot:'weapon', world:7, price:505, damage:35 },
-  { id:'leather', name:'Förstärkt läderväst', art:'🧥', slot:'armor', world:1, price:70, hp:18 },
-  { id:'armor', name:'Riddarrustning', art:'🥋', slot:'armor', world:2, price:110, hp:32 },
+  { id:'leather', name:'Förstärkt läderväst', art:'🧥', slot:'armor', world:1, price:70, hp:18, forge:true },
+  { id:'armor', name:'Läderrustning', art:'🥋', slot:'armor', world:2, price:110, hp:32, forge:true },
   { id:'plate', name:'Plåtrustning', art:'🛡️', slot:'armor', world:3, price:155, hp:49 },
   { id:'emberarmor', name:'Glödrustning', art:'🔥', slot:'armor', world:4, price:210, hp:67 },
   { id:'dragonarmor', name:'Drakfjällsrustning', art:'🐉', slot:'armor', world:5, price:270, hp:85 },
   { id:'dawnarmor', name:'Gryningsrustning', art:'🌅', slot:'armor', world:6, price:335, hp:106 },
   { id:'runearmor', name:'Runrustning', art:'✨', slot:'armor', world:7, price:410, hp:130 },
+  { id:'leatherhelm', name:'Öppen stålhjälm', art:'🪖', slot:'helmet', world:2, price:65, hp:14, forge:true },
+  { id:'leathershield', name:'Stålbeslagen sköld', art:'🛡️', slot:'shield', world:2, price:70, block:7, forge:true },
   { id:'crown', name:'Riddarhjälm', art:'👑', slot:'helmet', world:3, price:105, hp:20 },
   { id:'shield', name:'Runsköld', art:'🛡️', slot:'shield', world:3, price:115, block:10 }
 ];
 
+const FORGE_ITEMS = ITEMS.filter(item => item.forge);
 const GEAR_SLOTS = [
   ['armor', 'Rustning'], ['weapon', 'Svärd'], ['helmet', 'Hjälm'], ['shield', 'Sköld']
 ];
 const OUTFITS = {
-  training: { name: 'Basic-setet', gear: { armor:'trainingvest', weapon:'trainingblade', helmet:'traininghelm', shield:'trainingshield' } }
+  training: { name: 'Läder', gear: { armor:'trainingvest', weapon:'trainingblade', helmet:'traininghelm', shield:'trainingshield' } },
+  steel: { name: 'Läderrustning', gear: { armor:'armor', weapon:'steel', helmet:'leatherhelm', shield:'leathershield' } }
 };
 let fittingGear = null;
 let selectedGearSlot = 'armor';
@@ -1291,6 +1295,10 @@ const FITTED_ART = {
   trainingblade: { file:'svard', x:65, y:48, width:79, height:152, transform:'rotate(12 123 165)' },
   trainingvest: { file:'vast', ...VEST_FIT },
   leather: { file:'ladervast', ...VEST_FIT },
+  armor: { file:'laderrustning', ...VEST_FIT },
+  steel: { file:'stal-svard', x:45, y:43, width:101, height:148, transform:'rotate(8 123 165)' },
+  leatherhelm: { file:'stal-hjalm', x:132, y:8, width:108, height:103 },
+  leathershield: { file:'stal-skold', x:226, y:179, width:80, height:96 },
   traininghelm: { file:'hjalm', x:132, y:22, width:108, height:103 },
   trainingshield: { file:'skold', x:226, y:179, width:80, height:96 }
 };
@@ -1494,7 +1502,7 @@ function game() {
 }
 function questionUIIfReady(){return s.event||s.pendingDefense||s.gearChallenge||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
 function itemAvailable(item) {
-  return item.world === 0 || s.cleared.includes(item.world - 1);
+  return item.forge && (item.world === 0 || s.cleared.includes(item.world - 1));
 }
 
 function changeEquipment(slot, id) {
@@ -1541,20 +1549,20 @@ function wardrobePreview(equipment, trying) {
 function shop() {
   const balance = worldBalance(s.world);
   const danger = balance.bossDamage + BOSS_PHASE_DAMAGE + BOSS_SPECIAL_DAMAGE;
-  const gear = ITEMS.filter(item => item.world === s.world && ['weapon','armor'].includes(item.slot) && !item.look);
+  const gear = FORGE_ITEMS.filter(item => item.world === s.world && ['weapon','armor'].includes(item.slot) && !item.look);
   const draft = fittingGear || s.equipment;
   return `<div class="panel wardrobe-panel">
     <div class="top"><h2 class="title">⚒️ Smedjan · 🪙 ${s.gold}</h2>
       <button class="btn secondary" data-nav="inventory">🎒 Inventarie</button></div>
     ${wardrobePreview(draft, true)}
-    <p class="wardrobe-stock-status">${ITEMS.filter(itemAvailable).length} upplåsta delar av ${ITEMS.length} · Köp sparas i inventariet.</p>
+    <p class="wardrobe-stock-status">${FORGE_ITEMS.filter(itemAvailable).length} upplåsta delar av ${FORGE_ITEMS.length} · Köp sparas i inventariet.</p>
     ${gearPicker()}
-    <div class="grid wardrobe-stock">${ITEMS.filter(item => item.slot === selectedGearSlot).map(item => {
+    <div class="grid wardrobe-stock">${FORGE_ITEMS.filter(item => item.slot === selectedGearSlot).map(item => {
       const owned = s.inventory.includes(item.id);
       const available = itemAvailable(item);
       return `<div class="shopitem">
         <div class="art">${gearThumbnail(item)}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
-        <small>${item.look === 'training' ? 'Basic · ' : ''}${owned ? 'Ägd' : item.price ? item.price + ' guld' : 'Gratis'}</small>
+        <small>${item.look === 'training' ? 'Läder · ' : ''}${owned ? 'Ägd' : item.price ? item.price + ' guld' : 'Gratis'}</small>
         ${!available && !owned ? `<small class="shop-unlock">Besegra ${WORLDS[item.world - 1].boss} för att låsa upp</small>` : ''}
         <div class="actions">
           <button class="btn secondary small" data-try-item="${item.id}" aria-pressed="${draft[item.slot] === item.id}">${draft[item.slot] === item.id ? 'Provas' : 'Prova'}</button>
@@ -1565,7 +1573,8 @@ function shop() {
       <strong>${WORLDS[s.world].boss} · ${balance.bossHp} HP</strong>
       <p>Starkaste motattacken gör ${danger} skada före skölden. Du har ${maxHp()} max HP och gör ${dmg()} grundskada.</p>
       ${danger >= maxHp() ? '<p class="danger">Ett enda sådant slag kan fälla hjälten. Öka max HP med bättre rustning eller hjälm.</p>' : ''}
-      <p>${gear.length ? 'Rekommenderad utrustning: '+gear.map(item=>item.name+' ('+item.price+' guld)').join(' och ')+'.' : 'Grundattacken räcker för sex rätta attacktal mot Goblinkungen. Hämta ett gratis övningssvärd i smedjan.'}</p>
+      ${gear.length ? '<p>Utrustning för denna värld: '+gear.map(item=>item.name+' ('+item.price+' guld)').join(' och ')+'.</p>' :
+        s.world === 0 ? '<p>Grundattacken räcker för sex rätta attacktal mot Goblinkungen. Hämta ett gratis övningssvärd i smedjan.</p>' : ''}
     </div>
   </div>`;
 }
