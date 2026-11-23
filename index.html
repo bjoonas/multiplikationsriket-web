@@ -725,6 +725,59 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   .encounter-intro .enemy { animation: none }
   .encounter-light { display: none }
 }
+
+#hud { white-space: nowrap; font-variant-numeric: tabular-nums }
+.victory-card {
+  border-color: #e0b65f;
+  background: radial-gradient(ellipse at 50% 0%, #46472d, #19312c 62%, #142421);
+}
+.victory-card h2 { margin: 0 0 12px }
+.victory-card .card-reveal { gap: 4px }
+.victory-card .card-reveal img { height: clamp(82px, 20dvh, 145px) }
+.victory-card .card-reveal span { color: #e2d3ac; font-size: 13px }
+.victory-rewards { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 13px 0 }
+.victory-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 5px;
+  border: 1px solid #dfb45d;
+  border-radius: 10px;
+  background: #4e391f;
+  color: #ffeaac;
+  animation: victory-chip-in .42s ease-out .10s both;
+}
+.victory-chip[data-victory-reward="xp"] {
+  background: #234638;
+  border-color: #80c7a1;
+  color: #d5ffe3;
+  animation-delay: .22s;
+}
+.victory-chip strong { font-size: clamp(20px, 6vw, 32px); line-height: 1 }
+.victory-note { margin: 7px 0; font-size: 13px; color: #f5ddb0 }
+.victory-card .btn { margin-top: 5px; min-height: 44px }
+.victory-particle {
+  position: fixed;
+  z-index: 1400;
+  font-size: 23px;
+  pointer-events: none;
+  animation: victory-flight .56s cubic-bezier(.35, .08, .68, .8) both;
+}
+@keyframes victory-chip-in {
+  from { opacity: 0; transform: translateY(10px) scale(.88) }
+  65% { opacity: 1; transform: translateY(-2px) scale(1.05) }
+  to { opacity: 1; transform: none }
+}
+@keyframes victory-flight {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.65) }
+  30% { opacity: 1 }
+  80% { opacity: 1 }
+  to { opacity: 0; transform: translate(calc(-50% + var(--flight-x)), calc(-50% + var(--flight-y))) scale(.45) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .victory-chip { animation: none }
+}
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="brand">⚔ Multiplikationsriket</div><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -907,17 +960,18 @@ async function testAudio(){
   report('Ljudmotor: '+audioCtx.state+'. Om det är tyst: höj medievolymen och stäng av tyst läge på iPhone.');
  }catch(err){report('Ljudmotorn kunde inte startas: '+String(err?.message||err))}
 }
-function actionSound(kind){
+function actionSound(kind, delay = 0){
  if(!s.sound)return;
  try{
   audioCtx??=new(window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
-  const now=audioCtx.currentTime;
+  const now=audioCtx.currentTime+delay;
   const sequences={
    tap:[[430,0,.045,'sine',.014]],
    wrong:[[220,0,.12,'triangle',.035],[155,.12,.18,'triangle',.03]],
    chest:[[523,0,.10,'sine',.045],[659,.11,.10,'sine',.045],[784,.23,.13,'sine',.05],[1046,.38,.28,'sine',.055]],
    combo:[[523,0,.09,'sine',.04],[659,.09,.09,'sine',.045],[784,.18,.09,'sine',.05],[1046,.29,.24,'sine',.06]],
+   collect:[[1319,0,.095,'triangle',.04],[1976,.02,.07,'square',.016],[1568,.09,.11,'triangle',.042],[2349,.12,.085,'sine',.033],[784,.20,.14,'sine',.035],[1175,.30,.2,'sine',.044]],
    step:[[330,0,.055,'triangle',.018],[440,.075,.07,'sine',.02]],
    reward:[[660,0,.07,'sine',.035],[880,.09,.13,'sine',.04]]
   };
@@ -1027,7 +1081,22 @@ function fitGameViewport(){
  const main=document.getElementById('main'),available=main.clientHeight,needed=panel.scrollHeight;
  if(available>0&&needed>available){const scale=Math.max(.55,Math.min(1,available/needed));panel.style.zoom=String(scale);panel.style.width='100%'}
 }
-function render(){document.getElementById('nav').innerHTML=nav();document.getElementById('hud').textContent=`Nivå ${s.level} · 🪙 ${s.gold} · ❤️ ${s.hp}/${maxHp()}`;document.getElementById('main').innerHTML=({home:home,map:map,game:game,shop:shop,cards:cards,mastery:mastery,settings:settings})[screen]();fitGameViewport();}
+let collectingVictory = null;
+
+function renderHud(progress = collectingVictory || s.event?.reward?.before || s) {
+  const hud = document.getElementById('hud');
+  hud.innerHTML = `<span id="hud-level">Nivå ${escapeHtml(progress.level)}</span><span aria-hidden="true"> · </span>
+    <span id="hud-gold">🪙 ${escapeHtml(progress.gold)}</span><span aria-hidden="true"> · </span>
+    <span id="hud-xp">⭐ ${escapeHtml(progress.xp)} XP</span><span aria-hidden="true"> · </span>
+    <span>❤️ ${escapeHtml(s.hp)}/${maxHp()}</span>`;
+}
+
+function render(){
+  document.getElementById('nav').innerHTML=nav();
+  renderHud();
+  document.getElementById('main').innerHTML=({home,map,game,shop,cards,mastery,settings})[screen]();
+  fitGameViewport();
+}
 function home() {
   const world = WORLDS[s.world];
   const continuing = s.step > 0 || s.battle || s.cleared.length > 0;
@@ -1562,24 +1631,127 @@ function modal(title,body,done){
  document.body.appendChild(o);
  o.querySelector('button').addEventListener('click',()=>{o.remove();done?.()},{once:true});
 }
-function showVictoryEvent(){
- const ev=s.event;if(!ev)return;
- if(ev.card){
-  const m=MONSTERS.find(x=>x.id===ev.card);
-  if(m){
-   document.getElementById('game-modal')?.remove();
-   const o=document.createElement('div');o.className='game-modal-backdrop';o.id='game-modal';
-   o.innerHTML='<div class="modal" role="dialog" aria-modal="true"><h2>'+escapeHtml(ev.title)+'</h2><div class="card-reveal"><div>✨ NYTT MONSTERKORT! ✨</div><img src="assets/card-'+String(m.id).padStart(2,'0')+'.svg" alt="'+escapeHtml(m.name)+'"><strong>'+escapeHtml(m.name)+'</strong><span>'+rarity(m.id)+' · #'+m.id+'</span>'+(ev.collectionBonus?'<span class="reward">🏆 Samlingen komplett! +75 🪙 +50 XP</span>':'')+'</div><p>'+escapeHtml(ev.body)+'</p><button class="btn">Fortsätt</button></div>';
-   document.body.appendChild(o);actionSound('chest');
-   o.querySelector('button').addEventListener('click',()=>{o.remove();s.event=null;notice='';save();render()},{once:true});return;
+function victoryReward(event) {
+  if (event.reward) {
+    const { gold, xp, before } = event.reward;
+    return { gold: Math.max(0, Number(gold) || 0), xp: Math.max(0, Number(xp) || 0), before };
   }
- }
- modal(ev.title,ev.body,()=>{s.event=null;notice='';if(ev.type==='chest'&&Number.isInteger(ev.previousB)&&!s.lastQuestion)s.lastQuestion={a:WORLDS[s.world].n,b:ev.previousB};if(ev.type==='defeat'||ev.type==='gear-result')screen='game';save();render()});
+  const gold = Number(event.body?.match(/(\d+) guld/)?.[1] || 0);
+  const xp = Number(event.body?.match(/(\d+) XP/)?.[1] || 0);
+  return { gold: gold + (event.collectionBonus ? 75 : 0), xp: xp + (event.collectionBonus ? 50 : 0) };
 }
+
+function showVictoryEvent(event) {
+  const reward = victoryReward(event);
+  const monster = MONSTERS.find(item => item.id === (event.monster ?? event.card));
+  document.getElementById('game-modal')?.remove();
+  const dialog = document.createElement('div');
+  dialog.className = 'game-modal-backdrop';
+  dialog.id = 'game-modal';
+  dialog.innerHTML = `<div class="modal victory-card" role="dialog" aria-modal="true" aria-labelledby="victory-title">
+    <h2 id="victory-title">${escapeHtml(event.title)}</h2>
+    ${monster ? `<div class="card-reveal">
+      <img src="assets/card-${String(monster.id).padStart(2,'0')}.svg" alt="">
+      <strong>${escapeHtml(monster.name)}</strong>
+      <span>${event.card ? 'Nytt monsterkort' : 'Kortet finns redan'} · ${rarity(monster.id)} · #${monster.id}</span>
+    </div>` : ''}
+    <div class="victory-rewards" aria-label="Belöningar">
+      <div class="victory-chip" data-victory-reward="gold"><span aria-hidden="true">🪙</span><strong>+${reward.gold}</strong><span>Guld</span></div>
+      <div class="victory-chip" data-victory-reward="xp"><span aria-hidden="true">⭐</span><strong>+${reward.xp}</strong><span>XP</span></div>
+    </div>
+    ${event.collectionBonus ? '<p class="victory-note">Samlingsbonus ingår · +75 guld och +50 XP</p>' : ''}
+    ${event.body ? `<p class="victory-note">${escapeHtml(event.body)}</p>` : ''}
+    <button class="btn" type="button">Fortsätt</button>
+  </div>`;
+  document.body.appendChild(dialog);
+  dialog.querySelector('button').addEventListener('click', () => collectVictory(dialog, event, reward), { once: true });
+}
+
+function victoryFlight(source, target, symbol, delay) {
+  const end = target.getBoundingClientRect();
+  const startX = source.left + source.width / 2, startY = source.top + source.height / 2;
+  for (let i = 0; i < 5; i++) {
+    const particle = document.createElement('span');
+    particle.className = 'victory-particle';
+    particle.textContent = symbol;
+    particle.setAttribute('aria-hidden', 'true');
+    particle.style.left = startX + (i - 2) * 8 + 'px';
+    particle.style.top = startY + 'px';
+    particle.style.setProperty('--flight-x', (end.left + end.width / 2 - startX - (i - 2) * 8) + 'px');
+    particle.style.setProperty('--flight-y', (end.top + end.height / 2 - startY) + 'px');
+    particle.style.animationDelay = delay + i * 50 + 'ms';
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), delay + 800);
+  }
+}
+
+function collectVictory(dialog, event, reward) {
+  if (s.event !== event) return;
+  unlockAudio();
+  const gold = dialog.querySelector('[data-victory-reward="gold"]').getBoundingClientRect();
+  const xp = dialog.querySelector('[data-victory-reward="xp"]').getBoundingClientRect();
+  dialog.remove();
+  s.event = null;
+  notice = '';
+  save();
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  collectingVictory = reduceMotion ? null : reward.before;
+  render();
+  if (reduceMotion) {
+    actionSound('collect');
+    return;
+  }
+
+  const targets = { gold: document.getElementById('hud-gold'), xp: document.getElementById('hud-xp') };
+  victoryFlight(gold, targets.gold, '🪙', 0);
+  victoryFlight(xp, targets.xp, '⭐', 85);
+  actionSound('collect', .42);
+  busy = true;
+  const start = performance.now();
+  const before = reward.before;
+  const tick = now => {
+    const goldPart = Math.max(0, Math.min(1, (now - start - 400) / 350));
+    const xpPart = Math.max(0, Math.min(1, (now - start - 485) / 350));
+    if (before) {
+      let level = before.level, progress = before.xp + Math.floor(reward.xp * xpPart);
+      while (progress >= xpToNextLevel(level)) {
+        progress -= xpToNextLevel(level);
+        level++;
+      }
+      document.getElementById('hud-level').textContent = 'Nivå ' + level;
+      targets.gold.textContent = '🪙 ' + (before.gold + Math.floor(reward.gold * goldPart));
+      targets.xp.textContent = '⭐ ' + progress + ' XP';
+    }
+    if (xpPart < 1) {
+      requestAnimationFrame(tick);
+      return;
+    }
+    collectingVictory = null;
+    busy = false;
+    renderHud();
+  };
+  requestAnimationFrame(tick);
+}
+
 function showPendingEvent(){
- if(!s.event)return;
- if(s.event.type==='gear-offer')showGearOffer();
- else showVictoryEvent();
+  const event = s.event;
+  if (!event) return;
+  if (event.type === 'gear-offer') {
+    showGearOffer();
+  } else if (event.type === 'victory') {
+    showVictoryEvent(event);
+  } else {
+    modal(event.title, event.body, () => {
+      s.event = null;
+      notice = '';
+      if (event.type === 'chest' && Number.isInteger(event.previousB) && !s.lastQuestion) {
+        s.lastQuestion = { a: WORLDS[s.world].n, b: event.previousB };
+      }
+      if (event.type === 'defeat' || event.type === 'gear-result') screen = 'game';
+      save();
+      render();
+    });
+  }
 }
 function recoverGame(){
  if(s.gearChallenge){showGearChallenge();return}
@@ -1766,23 +1938,50 @@ function answer() {
   if (s.phase === 'travel') correctTravel(assisted, bonus);
   else correctBattle(battle, assisted, bonus);
 }
-function winBattle(){
- let b=s.battle;if(!b)return;
- let newCard=!s.cards.includes(b.card);if(newCard)s.cards.push(b.card);
- let collectionBonus=false;
- if(newCard){const m=MONSTERS.find(x=>x.id===b.card);if(m&&MONSTERS.filter(x=>x.world===m.world).every(x=>s.cards.includes(x.id))){s.collectionRewards??=[];if(!s.collectionRewards.includes(m.world)){s.collectionRewards.push(m.world);collectionBonus=true;s.gold+=75;xp(50)}}}
- const balance=worldBalance(s.world);
- const {gold,xp:earned}=b.boss?balance.boss:balance.monster;
- s.gold+=gold;xp(earned);s.battle=null;s.phase='travel';s.question=null;s.hp=Math.min(maxHp(),s.hp+balance.heal);
- if(b.boss){
-  if(!s.cleared.includes(s.world))s.cleared.push(s.world);
-  let old=s.world;s.step=0;s.gearRoute=null;if(old<7)s.world=old+1;
-  s.event={type:'victory',title:'🏆 '+WORLDS[old].boss+' besegrad!',card:newCard?b.card:null,collectionBonus,body:'Du fick '+gold+' guld, '+earned+' XP. '+(newCard?'Nytt monsterkort! ':'Kortet finns redan! ')+(old<7?'Nästa värld upplåst!':'Du räddade riket!')};
-  screen='map';save();render();showPendingEvent();
- }else{
-  s.event={type:'victory',title:'⚔️ Seger!',card:newCard?b.card:null,collectionBonus,body:'Monster besegrat! +'+gold+' guld, +'+earned+' XP. '+(newCard?'Nytt monsterkort!':'Kortet finns redan!')};
-  save();render();showPendingEvent();
- }
+function winBattle() {
+  const battle = s.battle;
+  if (!battle) return;
+  const before = { gold: s.gold, xp: s.xp, level: s.level };
+  const newCard = !s.cards.includes(battle.card);
+  const world = s.world;
+  const monster = MONSTERS.find(item => item.id === battle.card);
+  let collectionBonus = false;
+  if (newCard) {
+    s.cards.push(battle.card);
+    s.collectionRewards ??= [];
+    if (monster && !s.collectionRewards.includes(monster.world) &&
+        MONSTERS.filter(item => item.world === monster.world).every(item => s.cards.includes(item.id))) {
+      s.collectionRewards.push(monster.world);
+      collectionBonus = true;
+      s.gold += 75;
+      xp(50);
+    }
+  }
+  const balance = worldBalance(world);
+  const earned = battle.boss ? balance.boss : balance.monster;
+  s.gold += earned.gold;
+  xp(earned.xp);
+  s.battle = null;
+  s.phase = 'travel';
+  s.question = null;
+  s.hp = Math.min(maxHp(), s.hp + balance.heal);
+  s.event = {
+    type: 'victory',
+    title: battle.boss ? '🏆 ' + WORLDS[world].boss + ' besegrad!' : '⚔️ Monster besegrat!',
+    card: newCard ? battle.card : null, monster: battle.card, collectionBonus,
+    reward: { gold: earned.gold + (collectionBonus ? 75 : 0), xp: earned.xp + (collectionBonus ? 50 : 0), before },
+    body: battle.boss ? (world < WORLDS.length - 1 ? 'Nästa värld upplåst!' : 'Du räddade riket!') : ''
+  };
+  if (battle.boss) {
+    if (!s.cleared.includes(world)) s.cleared.push(world);
+    s.step = 0;
+    s.gearRoute = null;
+    if (world < WORLDS.length - 1) s.world++;
+    screen = 'map';
+  }
+  save();
+  render();
+  showPendingEvent();
 }
 function move(action) {
   if (!s.battle || encounterActive() || busy || s.event || s.pendingDefense || s.gearChallenge || s.battle.pending) return;
