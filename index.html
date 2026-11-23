@@ -1299,6 +1299,7 @@ function paintedGearOverlay(equipment) {
       </linearGradient>
     </defs>
     ${armor ? `<g data-worn-slot="armor" data-worn-item="${armor.id}" stroke="#462e20" stroke-width="3" stroke-linejoin="round">
+      ${forest(armor) ? '<path d="M159 121Q141 130 141 154Q131 191 104 229Q89 253 92 274L108 282Q109 301 144 309L151 286Q143 261 146 247Q130 251 133 230L143 207 151 174 166 143Z" fill="#385a39" stroke="#29462e"/><path d="M143 166Q133 212 103 268M136 251Q128 275 139 301" fill="none" stroke="#75915a" stroke-width="2"/>' : ''}
       <path id="painted-armor" d="M175 137 192 145 217 143 233 152 243 173 234 188 239 213 226 232 200 233 178 224 166 204 169 182 156 176Z" fill="${main(armor)}"/>
       <use href="#painted-armor" fill="url(#painted-gear-shade)"/>
       <path d="M168 202Q201 218 236 199M176 219Q204 232 229 216" fill="none" stroke="${trim(armor)}"/>
