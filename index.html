@@ -333,8 +333,9 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .atlas-play-world{font-size:12px;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:650px){.atlas-play-float{right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));padding:12px 15px}.atlas-panel{padding-bottom:80px}}
 
-/* Keep the walking track aligned with the bottom of the painted scenery. */
-.illustrated-travel { container-type: inline-size }
+/* The path center is 72 px from the bottom of each 1080 × 360 backdrop.
+   Project that row using the same scale as the bottom-aligned cover image. */
+.illustrated-travel { container-type: inline-size; --route-ground: max(20%, 6.6667cqw) }
 .illustrated-travel .scene-bg { background-size: cover; background-position: center bottom; filter: none }
 .scene.illustrated-travel .scene-bg { animation: none }
 .scene.illustrated-travel .scene-fog { background: linear-gradient(0deg, #10261b5e, transparent 30%); animation: none }
@@ -343,9 +344,23 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   width: 30%;
   height: 67%;
   bottom: var(--route-ground);
+  container-type: size;
   animation: none !important;
 }
-.illustrated-travel .hero img { object-position: center bottom }
+/* Account for the transparent 18 px below the boots on the 768 px sprite. */
+.illustrated-travel .hero img {
+  object-position: center bottom;
+  transform: translateY(min(2.34375cqw, 2.34375cqh));
+}
+.illustrated-travel .hero::before {
+  content: "";
+  position: absolute;
+  inset: auto 24% -3px;
+  height: 7px;
+  border-radius: 50%;
+  background: #40321d70;
+  filter: blur(2px);
+}
 .hero-gear { display: inline-flex; gap: 3px; margin-inline-start: 4px }
 .illustrated-travel > .hero-gear {
   position: absolute;
@@ -356,7 +371,7 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   background: #172920ef;
 }
 .scene.illustrated-travel.travel-moving .hero { animation: route-walk .65s ease-out both !important }
-.scene.illustrated-travel.travel-moving .hero-visual { animation: bob .22s ease-in-out 3 }
+.scene.illustrated-travel.travel-moving .hero-visual { animation: none }
 .illustrated-travel .travel-progress { bottom: 1.5% }
 .illustrated-travel .travel-marker { bottom: var(--route-ground) }
 .illustrated-travel .correct-celebration { position: absolute; align-items: start; padding-top: 6px }
@@ -369,8 +384,7 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   from { left: var(--route-from) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .scene.illustrated-travel.travel-moving .hero,
-  .scene.illustrated-travel.travel-moving .hero-visual { animation: none !important }
+  .scene.illustrated-travel.travel-moving .hero { animation: none !important }
 }
 
 /* Illustrated arena, enabled per world and only during combat. */
@@ -711,9 +725,9 @@ function monsterImage(b, arena) {
 
 const TRAVEL_BACKGROUNDS = {
   2: [
-    { start: 8, ground: 5, image: 'assets/backgrounds/riddarskolan-borgport.webp' },
-    { start: 4, ground: 5, image: 'assets/backgrounds/riddarskolan-stenbro.webp' },
-    { start: 0, ground: 11, image: 'assets/backgrounds/riddarskolan-skolvag.webp' }
+    { start: 8, image: 'assets/backgrounds/riddarskolan-borgport.webp' },
+    { start: 4, image: 'assets/backgrounds/riddarskolan-stenbro.webp' },
+    { start: 0, image: 'assets/backgrounds/riddarskolan-skolvag.webp' }
   ]
 };
 
@@ -730,7 +744,7 @@ function scene() {
   const palette = ['#efbf65','#b4e8de','#c9a17b','#8cc66e','#ff733b','#ff9a47','#a88be0','#9dc8ff'];
   const sceneArt = arena
     ? Object.entries(arena.layers).map(([layer, path]) => `--arena-${layer}:url('${path}')`).join(';')
-    : `--world-bg:url('${worldBackground}')${route ? `;--route-from:${Math.max(4, routeX - 18)}%;--route-ground:max(${route.ground}%, ${route.ground / 3}cqw)` : ''}`;
+    : `--world-bg:url('${worldBackground}')${route ? `;--route-from:${Math.max(4, routeX - 18)}%` : ''}`;
   const layers = arena
     ? ['background', 'midground', 'ground', 'foreground'].map(layer =>
         `<div class="arena-layer arena-${layer}" aria-hidden="true"></div>`).join('')
