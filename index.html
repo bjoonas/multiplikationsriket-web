@@ -821,15 +821,15 @@ const TYPES=['Goblin','Varg','Skelett','Rövare','Spindel','Golem','Troll','Skug
 const MONSTERS=Array.from({length:50},(_,i)=>({id:i+1,name:['Moss','Natt','Sten','Eld','Is'][Math.floor(i/10)]+' '+TYPES[i%10],art:ARTS[i%10],world:Math.min(7,Math.floor(i/7)),hp:25+(i%5)*7}));
 const ITEMS = [
   { id:'trainingblade', name:'Övningssvärd', art:'🗡️', slot:'weapon', world:0, price:0, damage:0, look:'training', shopOnly:true },
-  { id:'trainingvest', name:'Träningsväst med mantel', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'training', shopOnly:true },
-  { id:'traininghelm', name:'Övningshjälm', art:'🪖', slot:'helmet', world:0, price:25, hp:10, look:'training', shopOnly:true },
-  { id:'trainingshield', name:'Rund träsköld', art:'🛡️', slot:'shield', world:0, price:35, block:5, look:'training', shopOnly:true },
-  { id:'woodblade', name:'Skogsblad', art:'🍃', slot:'weapon', world:0, price:25, damage:0, look:'forest', shopOnly:true },
-  { id:'wildcoat', name:'Skogsväst', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'forest', shopOnly:true },
-  { id:'leafhood', name:'Lövhuva', art:'🌿', slot:'helmet', world:0, price:35, hp:10, look:'forest', shopOnly:true },
-  { id:'sunblade', name:'Solsvärd', art:'⚔️', slot:'weapon', world:0, price:20, damage:0, look:'royal', shopOnly:true },
-  { id:'goldcoat', name:'Gyllene bröstplåt', art:'✨', slot:'armor', world:0, price:35, hp:8, look:'royal', shopOnly:true },
-  { id:'sunshield', name:'Solsköld', art:'☀️', slot:'shield', world:0, price:35, block:5, look:'royal', shopOnly:true },
+  { id:'trainingvest', name:'Träningsväst med mantel', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'training' },
+  { id:'traininghelm', name:'Övningshjälm', art:'🪖', slot:'helmet', world:0, price:25, hp:10, look:'training' },
+  { id:'trainingshield', name:'Rund träsköld', art:'🛡️', slot:'shield', world:0, price:35, block:5, look:'training' },
+  { id:'woodblade', name:'Skogsblad', art:'🍃', slot:'weapon', world:0, price:25, damage:0, look:'forest', retired:true },
+  { id:'wildcoat', name:'Skogsväst', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'forest', retired:true },
+  { id:'leafhood', name:'Lövhuva', art:'🌿', slot:'helmet', world:0, price:35, hp:10, look:'forest', retired:true },
+  { id:'sunblade', name:'Solsvärd', art:'⚔️', slot:'weapon', world:0, price:20, damage:0, look:'royal', retired:true },
+  { id:'goldcoat', name:'Gyllene bröstplåt', art:'✨', slot:'armor', world:0, price:35, hp:8, look:'royal', retired:true },
+  { id:'sunshield', name:'Solsköld', art:'☀️', slot:'shield', world:0, price:35, block:5, look:'royal', retired:true },
   { id:'iron', name:'Järnsvärd', art:'🗡️', slot:'weapon', world:1, price:95, damage:5 },
   { id:'steel', name:'Stålsvärd', art:'⚔️', slot:'weapon', world:2, price:145, damage:10 },
   { id:'silver', name:'Silversvärd', art:'🗡️', slot:'weapon', world:3, price:200, damage:15 },
@@ -837,16 +837,16 @@ const ITEMS = [
   { id:'dragonblade', name:'Draksvärd', art:'🐉', slot:'weapon', world:5, price:335, damage:25 },
   { id:'dawnblade', name:'Gryningssvärd', art:'🌅', slot:'weapon', world:6, price:415, damage:30 },
   { id:'runeblade', name:'Runsvärd', art:'⚔️', slot:'weapon', world:7, price:505, damage:35 },
-  { id:'leather', name:'Läderharnesk', art:'🧥', slot:'armor', world:1, price:70, hp:18 },
+  { id:'leather', name:'Förstärkt läderväst', art:'🧥', slot:'armor', world:1, price:70, hp:18 },
   { id:'armor', name:'Riddarrustning', art:'🥋', slot:'armor', world:2, price:110, hp:32 },
   { id:'plate', name:'Plåtrustning', art:'🛡️', slot:'armor', world:3, price:155, hp:49 },
   { id:'emberarmor', name:'Glödrustning', art:'🔥', slot:'armor', world:4, price:210, hp:67 },
   { id:'dragonarmor', name:'Drakfjällsrustning', art:'🐉', slot:'armor', world:5, price:270, hp:85 },
   { id:'dawnarmor', name:'Gryningsrustning', art:'🌅', slot:'armor', world:6, price:335, hp:106 },
   { id:'runearmor', name:'Runrustning', art:'✨', slot:'armor', world:7, price:410, hp:130 },
-  { id:'helm', name:'Järnhjälm', art:'🪖', slot:'helmet', world:0, price:55, hp:10, look:'royal' },
+  { id:'helm', name:'Järnhjälm', art:'🪖', slot:'helmet', world:0, price:55, hp:10, look:'royal', retired:true },
   { id:'crown', name:'Riddarhjälm', art:'👑', slot:'helmet', world:3, price:105, hp:20 },
-  { id:'oakshield', name:'Eksköld', art:'🛡️', slot:'shield', world:0, price:50, block:5, look:'forest' },
+  { id:'oakshield', name:'Eksköld', art:'🛡️', slot:'shield', world:0, price:50, block:5, look:'forest', retired:true },
   { id:'shield', name:'Runsköld', art:'🛡️', slot:'shield', world:3, price:115, block:10 }
 ];
 
@@ -854,9 +854,7 @@ const GEAR_SLOTS = [
   ['armor', 'Rustning'], ['weapon', 'Svärd'], ['helmet', 'Hjälm'], ['shield', 'Sköld']
 ];
 const OUTFITS = {
-  training: { name: 'träningsutrustningen', gear: { armor:'trainingvest', weapon:'trainingblade', helmet:'traininghelm', shield:'trainingshield' } },
-  forest: { name: 'Skogsväktaren', gear: { armor:'wildcoat', weapon:'woodblade', helmet:'leafhood', shield:'oakshield' } },
-  royal: { name: 'Gyllene riddaren', gear: { armor:'goldcoat', weapon:'sunblade', helmet:'helm', shield:'sunshield' } }
+  training: { name: 'träningsutrustningen', gear: { armor:'trainingvest', weapon:'trainingblade', helmet:'traininghelm', shield:'trainingshield' } }
 };
 let fittingGear = null;
 let selectedGearSlot = 'armor';
@@ -1276,9 +1274,11 @@ function activeArena() {
 }
 
 const HERO_IMAGE = 'assets/characters/borgvapnaren.webp';
-const TRAINING_ART = {
+const VEST_FIT = { x:151, y:121, width:98, height:132, transform:'matrix(1.12 0 0 1 -18.6 0)' };
+const FITTED_ART = {
   trainingblade: { file:'svard', x:65, y:48, width:79, height:152, transform:'rotate(12 123 165)' },
-  trainingvest: { file:'vast', x:151, y:121, width:98, height:132, transform:'matrix(1.12 0 0 1 -18.6 0)' },
+  trainingvest: { file:'vast', ...VEST_FIT },
+  leather: { file:'ladervast', ...VEST_FIT },
   traininghelm: { file:'hjalm', x:132, y:22, width:108, height:103 },
   trainingshield: { file:'skold', x:226, y:179, width:80, height:96 }
 };
@@ -1287,8 +1287,8 @@ function gearImage(file) {
   return 'assets/characters/borgvapnaren-' + file + '.webp';
 }
 
-function trainingLayer(item) {
-  const art = TRAINING_ART[item.id];
+function fittedGearLayer(item) {
+  const art = FITTED_ART[item.id];
   return `<g data-worn-slot="${item.slot}" data-worn-item="${item.id}">
     <g${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : ''}>
       <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"${art.transform ? ` transform="${art.transform}"` : ''}/>
@@ -1312,7 +1312,7 @@ function wornCape(armor) {
 }
 
 function gearThumbnail(item) {
-  const art = TRAINING_ART[item.id];
+  const art = FITTED_ART[item.id];
   return art ? `<img src="${gearImage(art.file)}" alt="">` : item.art;
 }
 
@@ -1369,7 +1369,7 @@ function paintedGearOverlay(equipment, armor) {
         <feDropShadow dx="1.5" dy="2.6" stdDeviation="2" flood-color="#221a18" flood-opacity=".7"/>
       </filter>
     </defs>
-    ${armor ? TRAINING_ART[armor.id] ? trainingLayer(armor) : `<g data-worn-slot="armor"
+    ${armor ? FITTED_ART[armor.id] ? fittedGearLayer(armor) : `<g data-worn-slot="armor"
       data-worn-item="${armor.id}" transform="translate(0 -58) scale(1 1.32)" filter="url(#gear-shadow)" stroke-linejoin="round">
       <path d="M175 137Q193 149 217 143L232 151Q240 160 243 173L234 188 239 213 226 232Q200 240 178 224L166 204 169 182 156 176Z" fill="${finish(armor)}" stroke="#493426" stroke-width="2.5" filter="url(#gear-grain)"/>
       <path d="M176 142Q199 156 222 148M164 173q9-8 19-12M170 204Q200 220 235 200M177 219Q202 233 229 216" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
@@ -1380,7 +1380,7 @@ function paintedGearOverlay(equipment, armor) {
         <path d="M204 154l5 10 12 2-9 7 2 12-10-6-10 6 2-12-9-7 12-2Z" fill="url(#gear-edge)" stroke="#785327" stroke-width="1.5"/>`}
       <g fill="${emblem(armor)}"><circle cx="170" cy="173" r="2.4"/><circle cx="233" cy="173" r="2.4"/><circle cx="179" cy="214" r="2"/><circle cx="225" cy="216" r="2"/></g>
     </g>` : ''}
-    ${helmet ? TRAINING_ART[helmet.id] ? trainingLayer(helmet) : `<g data-worn-slot="helmet" data-worn-item="${helmet.id}" transform="translate(-8 13)" filter="url(#gear-shadow)" stroke-linejoin="round">
+    ${helmet ? FITTED_ART[helmet.id] ? fittedGearLayer(helmet) : `<g data-worn-slot="helmet" data-worn-item="${helmet.id}" transform="translate(-8 13)" filter="url(#gear-shadow)" stroke-linejoin="round">
       ${forest(helmet) ? '' : '<path d="M176 40Q177 10 221 9L228 13Q216 19 212 34Z" fill="url(#gear-plume)" stroke="#333755" stroke-width="2"/><path d="M185 33Q194 18 215 15" fill="none" stroke="#a4b7d4" stroke-width="1.5"/>'}
       <path d="${forest(helmet) ? 'M147 71Q149 36 189 26L225 32 244 53 218 52 195 57 182 76 178 101 157 94Z' : 'M147 73Q149 40 178 31L202 26 231 36 249 59 235 72 221 57 191 64 183 89 165 101 153 92Z'}" fill="${finish(helmet)}" stroke="#504031" stroke-width="2.5" filter="url(#gear-grain)"/>
       <path d="M154 76Q174 48 216 46L240 57M158 84q7-21 23-25" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
@@ -1391,7 +1391,7 @@ function paintedGearOverlay(equipment, armor) {
         <path d="M161 81l1 6m4-8 1 5" stroke="#684c33" stroke-width="2.5" stroke-linecap="round"/>
         <circle cx="170" cy="74" r="3.7" fill="url(#gear-edge)" stroke="#654931" stroke-width="1.4"/>`}
     </g>` : ''}
-    ${weapon ? `${TRAINING_ART[weapon.id] ? trainingLayer(weapon) :
+    ${weapon ? `${FITTED_ART[weapon.id] ? fittedGearLayer(weapon) :
       `<g data-worn-slot="weapon" data-worn-item="${weapon.id}" transform="translate(123 165) rotate(-24)"
         filter="url(#gear-shadow)" stroke-linejoin="round">
         <path d="${forest(weapon) ? 'M-8-19Q-16-59-5-116Q7-103 8-78L8-19Z' : 'M-9-19V-104L0-121 9-104V-19Z'}"
@@ -1402,7 +1402,7 @@ function paintedGearOverlay(equipment, armor) {
         <circle cy="24" r="6" fill="url(#gear-edge)" stroke="#715137" stroke-width="1.5"/>
       </g>`}
       <image data-grip-layer href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#borgvapnaren-grip)"/>` : ''}
-    ${shield ? TRAINING_ART[shield.id] ? trainingLayer(shield) : `<g data-worn-slot="shield" data-worn-item="${shield.id}" transform="translate(-12 -6)" filter="url(#gear-shadow)" stroke-linejoin="round">
+    ${shield ? FITTED_ART[shield.id] ? fittedGearLayer(shield) : `<g data-worn-slot="shield" data-worn-item="${shield.id}" transform="translate(-12 -6)" filter="url(#gear-shadow)" stroke-linejoin="round">
       <path d="${forest(shield) ? 'M277 199c24 0 43 17 43 41s-19 42-43 42-43-18-43-42 19-41 43-41Z' : 'M241 205 277 194 311 205 307 245Q301 272 277 293 253 274 244 246Z'}" fill="${forest(shield) ? 'url(#gear-wood)' : finish(shield)}" stroke="#4a3223" stroke-width="5" filter="url(#gear-grain)"/>
       <path d="${forest(shield) ? 'M277 203c22 0 39 16 39 37s-17 38-39 38-39-17-39-38 17-37 39-37Z' : 'M246 209 277 199 306 208 302 243Q296 267 277 286 258 268 249 244Z'}" fill="none" stroke="url(#gear-edge)" stroke-width="3.7"/>
       ${forest(shield) ? `<path d="M259 208q-7 20 0 59m12-58q-5 24 0 63m16-64q5 31-2 62m13-54q5 25-2 45" fill="none" stroke="#533722" opacity=".57" stroke-width="2"/>
@@ -1509,7 +1509,7 @@ function game() {
 }
 function questionUIIfReady(){return s.event||s.pendingDefense||s.gearChallenge||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
 function itemAvailable(item) {
-  return item.world === 0 || s.cleared.includes(item.world - 1);
+  return !item.retired && (item.world === 0 || s.cleared.includes(item.world - 1));
 }
 
 function changeEquipment(slot, id) {
@@ -1561,9 +1561,9 @@ function shop() {
     <div class="top"><h2 class="title">⚒️ Smedjan · 🪙 ${s.gold}</h2>
       <button class="btn secondary" data-nav="inventory">🎒 Inventarie</button></div>
     ${wardrobePreview(draft, true)}
-    <p class="wardrobe-stock-status">${ITEMS.filter(itemAvailable).length} upplåsta delar av ${ITEMS.length} · Köp sparas i inventariet.</p>
+    <p class="wardrobe-stock-status">${ITEMS.filter(itemAvailable).length} upplåsta delar av ${ITEMS.filter(item => !item.retired).length} · Köp sparas i inventariet.</p>
     ${gearPicker()}
-    <div class="grid wardrobe-stock">${ITEMS.filter(item => item.slot === selectedGearSlot).map(item => {
+    <div class="grid wardrobe-stock">${ITEMS.filter(item => !item.retired && item.slot === selectedGearSlot).map(item => {
       const owned = s.inventory.includes(item.id);
       const available = itemAvailable(item);
       return `<div class="shopitem">
@@ -1722,7 +1722,7 @@ function gearStrength(item) {
 function offerGearFind() {
   if (s.gearRoute?.step !== s.step || s.gearFinds.includes(s.world)) return;
   const owned = ITEMS.filter(item => s.inventory.includes(item.id));
-  const eligible = ITEMS.filter(item => !item.shopOnly && item.world <= s.world && item.world >= s.world - 1 &&
+  const eligible = ITEMS.filter(item => !item.retired && !item.shopOnly && item.world <= s.world && item.world >= s.world - 1 &&
     !owned.some(other => other.slot === item.slot && gearStrength(other) >= gearStrength(item)));
   const weighted = eligible.flatMap(item => Array(item.world === s.world ? 4 : 1).fill(item));
   if (!weighted.length) return;
