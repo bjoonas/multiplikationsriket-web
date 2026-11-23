@@ -335,7 +335,7 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 
 /* The path center is 72 px from the bottom of each 1080 × 360 backdrop.
    Project that row using the same scale as the bottom-aligned cover image. */
-.illustrated-travel { container-type: inline-size; --route-ground: max(20%, 6.6667cqw) }
+.illustrated-travel { container-type: inline-size; --route-ground: calc(var(--route-ground-percent, 20) * max(1%, .333333cqw)) }
 .illustrated-travel .scene-bg { background-size: cover; background-position: center bottom; filter: none }
 .scene.illustrated-travel .scene-bg { animation: none }
 .scene.illustrated-travel .scene-fog { background: linear-gradient(0deg, #10261b5e, transparent 30%); animation: none }
@@ -386,6 +386,9 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 @media (prefers-reduced-motion: reduce) {
   .scene.illustrated-travel.travel-moving .hero { animation: none !important }
 }
+
+/* The actor container mirrors enemy movement; these sprites already face left. */
+.enemy .enemy-facing-left { scale: -1 1 }
 
 /* Illustrated arena, enabled per world and only during combat. */
 .game-panel .scene.layered-arena {
@@ -1292,6 +1295,20 @@ const BATTLE_ARENAS = {
     enemies: {},
     boss: 'assets/monster-6.svg',
     placeholderEnemy: card => 'assets/monster-' + (card - 1) + '.svg'
+  },
+  3: {
+    layers: { background: 'assets/backgrounds/skelettborgen-arena.webp' },
+    enemies: {
+      8: 'assets/monsters/skelettborgen-skugga.webp',
+      9: 'assets/monsters/skelettborgen-vaktare.webp',
+      10: 'assets/monsters/skelettborgen-drake.webp',
+      11: 'assets/monsters/skelettborgen-goblin.webp',
+      12: 'assets/monsters/skelettborgen-varg.webp',
+      13: 'assets/monsters/skelettborgen-skelett.webp',
+      14: 'assets/monsters/skelettborgen-rovare.webp'
+    },
+    boss: 'assets/monsters/skelettborgen-benkaptenen.webp',
+    facesLeft: true
   }
 };
 
@@ -1444,10 +1461,15 @@ function sceneGear() {
   return `<span class="hero-gear" aria-label="${escapeHtml(equipmentSummary())}" title="${escapeHtml(equipmentSummary())}">${items.map(item => item.art).join('')}</span>`;
 }
 
+function monsterCardImage(monster) {
+  return BATTLE_ARENAS[WORLDS[monster.world].n]?.enemies[monster.id]
+    || 'assets/card-' + String(monster.id).padStart(2, '0') + '.svg';
+}
+
 function monsterImage(b, arena) {
   const card = b.card || 1;
   return (b.boss ? arena?.boss : arena?.enemies[card])
-    || arena?.placeholderEnemy(card)
+    || arena?.placeholderEnemy?.(card)
     || 'assets/card-' + String(card).padStart(2, '0') + '.svg';
 }
 
@@ -1456,6 +1478,11 @@ const TRAVEL_BACKGROUNDS = {
     { start: 8, image: 'assets/backgrounds/riddarskolan-borgport.webp' },
     { start: 4, image: 'assets/backgrounds/riddarskolan-stenbro.webp' },
     { start: 0, image: 'assets/backgrounds/riddarskolan-skolvag.webp' }
+  ],
+  3: [
+    { start: 8, image: 'assets/backgrounds/skelettborgen-borgport.webp', ground: 17 },
+    { start: 4, image: 'assets/backgrounds/skelettborgen-stenbro.webp', ground: 22 },
+    { start: 0, image: 'assets/backgrounds/skelettborgen-gravvag.webp', ground: 16 }
   ]
 };
 
@@ -1468,9 +1495,10 @@ function scene(intro = false) {
   const heroX = b ? 16 : route ? routeX : Math.min(53, 12 + s.step * 3.5);
   const gear = sceneGear();
   const palette = ['#efbf65','#b4e8de','#c9a17b','#8cc66e','#ff733b','#ff9a47','#a88be0','#9dc8ff'];
+  const routeGround = route?.ground ? `;--route-ground-percent:${route.ground}` : '';
   const sceneArt = arena
     ? Object.entries(arena.layers).map(([layer, path]) => `--arena-${layer}:url('${path}')`).join(';')
-    : `--world-bg:url('${worldBackground}')${route ? `;--route-from:${Math.max(4, routeX - 18)}%` : ''}`;
+    : `--world-bg:url('${worldBackground}')${route ? `;--route-from:${Math.max(4, routeX - 18)}%${routeGround}` : ''}`;
   const layers = arena
     ? ['background', 'midground', 'ground', 'foreground'].map(layer =>
         `<div class="arena-layer arena-${layer}" aria-hidden="true"></div>`).join('')
@@ -1481,7 +1509,7 @@ function scene(intro = false) {
     <div class="travel-progress"><div style="width:${s.step/12*100}%"></div></div>`;
   const actors = `<div class="hero-spot"></div>
     <div class="hero" id="hero" title="${escapeHtml(equipmentSummary())}" style="left:${heroX}%">${heroVisual()}</div>
-    ${b ? `<div class="enemy" id="enemy"><img src="${monsterImage(b, arena)}" alt="${escapeHtml(b.name)}"></div>` : ''}`;
+    ${b ? `<div class="enemy" id="enemy"><img${arena?.facesLeft && (b.boss ? arena.boss : arena.enemies[b.card]) ? ' class="enemy-facing-left"' : ''} src="${monsterImage(b, arena)}" alt="${escapeHtml(b.name)}"></div>` : ''}`;
   const heads = b ? `<div class="battleheads">
     <div>🛡️ Hjälten${gear}<div class="healthbar"><div style="width:${100*s.hp/maxHp()}%;background:#5caa77"></div></div></div>
     <div>${escapeHtml(b.name)}<div class="healthbar"><div style="width:${100*b.hp/b.maxHp}%"></div></div></div>
@@ -1644,7 +1672,7 @@ function handleWardrobeInput(button) {
   }
 }
 
-function cards(){let total=MONSTERS.length,owned=MONSTERS.filter(m=>s.cards.includes(m.id));let byWorld=WORLDS.map((w,i)=>{let all=MONSTERS.filter(m=>m.world===i),got=all.filter(m=>s.cards.includes(m.id));return '<span class="pill">'+w.emoji+' '+got.length+'/'+all.length+'</span>'}).join(' ');return `<div class="panel"><h2 class="title">📖 Monsterboken ${owned.length}/${total}</h2><p>Besegra monster för att låsa upp deras kort. Samla alla i en värld för en engångsbonus på 75 guld och 50 XP. Återvänd till tidigare världar via kartan för att samla de kort du saknar. Monster väljs i första hand bland oupptäckta kort i världen.</p><p>${byWorld}</p><p class="hint">✨ Vanlig · 💠 Sällsynt · 💜 Episk · 🟡 Legendarisk. Kortens sällsynthet påverkar samlingen, inte matematiken.</p><div class="cards">${MONSTERS.map(m=>{let has=s.cards.includes(m.id),tier=rarity(m.id);return `<div class="monster ${has?'':'locked'}" ${has?'data-card="'+m.id+'" role="button" tabindex="0"':''} title="${has?escapeHtml(m.name):'Besegra monster i '+escapeHtml(WORLDS[m.world].name)}"><div class="art">${has?`<img src="assets/card-${String(m.id).padStart(2,'0')}.svg" alt="">`:'<img src="assets/card-'+String(m.id).padStart(2,'0')+'.svg" alt="Okänt monster">'}</div><b>${has?escapeHtml(m.name):'Okänd'}</b><div class="steptrack">#${String(m.id).padStart(2,'0')} · ${has?tier:'Låst'}</div><div class="steptrack">${WORLDS[m.world].name}</div></div>`}).join('')}</div></div>`}
+function cards(){let total=MONSTERS.length,owned=MONSTERS.filter(m=>s.cards.includes(m.id));let byWorld=WORLDS.map((w,i)=>{let all=MONSTERS.filter(m=>m.world===i),got=all.filter(m=>s.cards.includes(m.id));return '<span class="pill">'+w.emoji+' '+got.length+'/'+all.length+'</span>'}).join(' ');return `<div class="panel"><h2 class="title">📖 Monsterboken ${owned.length}/${total}</h2><p>Besegra monster för att låsa upp deras kort. Samla alla i en värld för en engångsbonus på 75 guld och 50 XP. Återvänd till tidigare världar via kartan för att samla de kort du saknar. Monster väljs i första hand bland oupptäckta kort i världen.</p><p>${byWorld}</p><p class="hint">✨ Vanlig · 💠 Sällsynt · 💜 Episk · 🟡 Legendarisk. Kortens sällsynthet påverkar samlingen, inte matematiken.</p><div class="cards">${MONSTERS.map(m=>{let has=s.cards.includes(m.id),tier=rarity(m.id);return `<div class="monster ${has?'':'locked'}" ${has?'data-card="'+m.id+'" role="button" tabindex="0"':''} title="${has?escapeHtml(m.name):'Besegra monster i '+escapeHtml(WORLDS[m.world].name)}"><div class="art">${has?`<img src="${monsterCardImage(m)}" alt="">`:'<img src="assets/card-'+String(m.id).padStart(2,'0')+'.svg" alt="Okänt monster">'}</div><b>${has?escapeHtml(m.name):'Okänd'}</b><div class="steptrack">#${String(m.id).padStart(2,'0')} · ${has?tier:'Låst'}</div><div class="steptrack">${WORLDS[m.world].name}</div></div>`}).join('')}</div></div>`}
 function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2><p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.22 · Mobilanpassad mobilhöjd · femsekundersblockering och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
 let encounterTimer;
 
@@ -1927,7 +1955,7 @@ function showVictoryEvent(event) {
   dialog.innerHTML = `<div class="modal victory-card" role="dialog" aria-modal="true" aria-labelledby="victory-title">
     <h2 id="victory-title">${escapeHtml(event.title)}</h2>
     ${monster ? `<div class="card-reveal">
-      <img src="assets/card-${String(monster.id).padStart(2,'0')}.svg" alt="">
+      <img src="${monsterCardImage(monster)}" alt="">
       <strong>${escapeHtml(monster.name)}</strong>
       <span>${event.card ? 'Nytt monsterkort' : 'Kortet finns redan'} · ${rarity(monster.id)} · #${monster.id}</span>
     </div>` : ''}
