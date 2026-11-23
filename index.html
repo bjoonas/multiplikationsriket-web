@@ -1293,7 +1293,13 @@ function trainingLayer(item) {
     <g${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : ''}>
       <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"${art.transform ? ` transform="${art.transform}"` : ''}/>
     </g>
-    ${item.slot === 'armor' ? `<image href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#training-sleeve)"/>` : ''}
+    ${item.slot === 'armor' ? `
+      <g clip-path="url(#training-shoulder)">
+        <image href="${gearImage(art.file)}" x="${art.x - 18}" y="${art.y - 29}" width="${art.width}" height="${art.height}"/>
+      </g>
+      <path d="M159 146Q165 140 172 148Q181 160 169 173" fill="none" stroke="#583725" stroke-width="2.6"/>
+      <path d="M159 145Q166 140 173 148Q181 159 170 172" fill="none" stroke="#bf9462" stroke-width="1.3"/>
+      <image href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#training-sleeve)"/>` : ''}
   </g>`;
 }
 
@@ -1323,9 +1329,10 @@ function paintedGearOverlay(equipment, armor) {
       <mask id="training-vest-opening" maskUnits="userSpaceOnUse" x="145" y="115" width="115" height="145">
         <rect x="145" y="115" width="115" height="145" fill="white"/>
         <path d="M167 141Q175 139 180 149Q185 161 177 169Q173 169 169 161Q163 153 167 141Z"/>
-        <path d="M181 115H225V127Q218 131 215 137L211 144Q207 139 203 134Q193 131 183 128Z"/>
+        <path d="M181 115H233V130Q224 131 219 136L213 143Q207 139 202 135Q192 132 183 130Z"/>
       </mask>
-      <clipPath id="training-sleeve"><path d="M139 156Q149 143 165 139Q171 146 171 157Q169 174 158 184L139 185Z"/></clipPath>
+      <clipPath id="training-shoulder"><path d="M157 148Q159 135 171 130Q180 128 190 135L188 153Q182 167 170 174L165 174Q174 159 166 150Q162 146 157 148Z"/></clipPath>
+      <clipPath id="training-sleeve"><path d="M138 160Q151 151 159 146Q165 143 171 152Q178 167 162 184L138 188Z"/></clipPath>
       <clipPath id="borgvapnaren-grip"><path d="M109 159Q108 151 115 150L127 149Q135 150 137 157L137 174 131 181 116 180Q109 172 109 159Z"/></clipPath>
       <radialGradient id="gear-leather" cx=".31" cy=".26" r=".8">
         <stop stop-color="#b7a56b"/><stop offset=".5" stop-color="#67653c"/><stop offset="1" stop-color="#302c1c"/>
