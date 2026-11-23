@@ -1200,7 +1200,7 @@ function dmg() {
   return weaponDamage(ITEMS.find(item => item.id === s.equipment.weapon));
 }
 function escapeHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function nav(){return [['home','🏠 Hem'],['map','🗺️ Karta'],['game','⚔️ Spela'],['challenge','💎 Utmaning'],['shop','⚒️ Smedjan'],['inventory','🎒 Inventarie'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${screen===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
+function nav(){return [['home','⚔️ Spela'],['map','🗺️ Karta'],['challenge','💎 Utmaning'],['shop','⚒️ Smedjan'],['inventory','🎒 Inventarie'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${(screen==='game'?'home':screen)===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
 function fitGameViewport(){
  const playing=screen==='game';document.body.classList.toggle('playing',playing);
  document.body.classList.toggle('home-screen',screen==='home');
