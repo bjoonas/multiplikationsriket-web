@@ -1278,9 +1278,9 @@ function activeArena() {
 const HERO_IMAGE = 'assets/characters/borgvapnaren.webp';
 const TRAINING_ART = {
   trainingblade: { file:'svard', x:65, y:48, width:79, height:152, transform:'rotate(12 123 165)' },
-  trainingvest: { file:'vast', x:151, y:121, width:98, height:132 },
+  trainingvest: { file:'vast', x:151, y:121, width:98, height:132, transform:'matrix(1.12 0 0 1 -18.6 0)' },
   traininghelm: { file:'hjalm', x:132, y:22, width:108, height:103 },
-  trainingshield: { file:'skold', x:254, y:185, width:80, height:96 }
+  trainingshield: { file:'skold', x:226, y:179, width:80, height:96 }
 };
 
 function gearImage(file) {
@@ -1290,7 +1290,9 @@ function gearImage(file) {
 function trainingLayer(item) {
   const art = TRAINING_ART[item.id];
   return `<g data-worn-slot="${item.slot}" data-worn-item="${item.id}">
-    <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"${art.transform ? ` transform="${art.transform}"` : ''}${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : ''}/>
+    <g${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : ''}>
+      <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"${art.transform ? ` transform="${art.transform}"` : ''}/>
+    </g>
     ${item.slot === 'armor' ? `<image href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#training-sleeve)"/>` : ''}
   </g>`;
 }
