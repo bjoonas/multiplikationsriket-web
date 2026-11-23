@@ -520,8 +520,8 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 
 .playing.layered-battle #main { overflow-y: auto }
 @media (orientation: portrait) and (max-width: 650px) {
-  .layered-battle .nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible }
-  .layered-battle .nav button { width: 100%; white-space: normal; padding-inline: 2px; font-size: clamp(9px, 2.7vw, 12px) }
+  :is(.layered-battle, .home-screen) .nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible }
+  :is(.layered-battle, .home-screen) .nav button { width: 100%; white-space: normal; padding-inline: 2px; font-size: clamp(9px, 2.7vw, 12px) }
   .game-panel.arena-panel { display: flex; flex-direction: column; min-height: 100% }
   .game-panel.arena-panel .scene.layered-arena {
     flex: 1 0 190px;
@@ -561,6 +561,97 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   .layered-arena::after { animation: none !important; transition: none !important }
   .layered-arena .enemy.dead { opacity: 0 }
   .scene.layered-arena.combat-impact::after { display: none }
+}
+/* Home uses the same painted characters and palette as Riddarskolan. */
+.home-page { display: grid; gap: 12px }
+.home-cover {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  min-height: clamp(325px, 48dvh, 470px);
+  padding: clamp(16px, 4vw, 40px);
+  overflow: hidden;
+  border: 2px solid #d4a657;
+  border-radius: 20px;
+  background: #19362d url('assets/backgrounds/riddarens-resa.webp') center 15% / cover;
+  box-shadow: 0 10px 30px #0006;
+}
+.home-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(0deg, #13251cec, #13251c88 31%, transparent 68%),
+              linear-gradient(90deg, #14271ca8, transparent 70%);
+}
+.home-character {
+  position: absolute;
+  z-index: -1;
+  right: 4%;
+  bottom: 5%;
+  width: 42%;
+  height: 77%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 7px 5px #10180c99);
+  pointer-events: none;
+}
+.home-intro { max-width: min(64%, 540px) }
+.home-intro h1 {
+  margin: 0;
+  color: #fff0bc;
+  font: 700 clamp(36px, 7vw, 78px)/.99 Georgia, serif;
+  text-wrap: balance;
+  text-shadow: 0 3px 8px #101910;
+}
+.home-intro p { color: #fff3d9; margin: 10px 0 15px; font-size: clamp(14px, 2.2vw, 18px); text-shadow: 0 2px 4px #101910 }
+.home-start.btn {
+  min-height: 46px;
+  max-width: 100%;
+  padding: 10px 16px;
+  color: #241903;
+  background: linear-gradient(#ffe6a2, #d3a052);
+  border-color: #ffe2a2;
+}
+.home-summary {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 12px 20px;
+  background: linear-gradient(150deg, #263c34, #172923);
+}
+.home-summary h2 { margin: 0 0 4px; font: 700 clamp(17px, 3vw, 26px) Georgia, serif; color: #f9dfa2 }
+.home-summary p { margin: 0; font-size: 14px }
+.home-summary small { display: block; margin-top: 4px; color: #dfd9bd }
+.home-summary progress {
+  display: block;
+  width: 100%;
+  height: 9px;
+  margin: 7px 0 3px;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  appearance: none;
+  background: #0b1a16;
+}
+.home-summary progress::-webkit-progress-bar { background: #0b1a16 }
+.home-summary progress::-webkit-progress-value { background: #e3b961 }
+.home-summary progress::-moz-progress-bar { background: #e3b961 }
+.home-links { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px }
+.home-links .btn {
+  min-height: 44px;
+  padding: 7px 5px;
+  background: #304b3d;
+  border-color: #758c71;
+  box-shadow: 0 2px 0 #102019;
+}
+@media (max-width: 650px) {
+  .home-cover { border-radius: 15px; padding: 14px; min-height: clamp(300px, 49dvh, 410px); background-position: center 55% }
+  .home-intro { max-width: 65% }
+  .home-character { right: 0; width: 46%; height: 65%; bottom: 8% }
+  .home-summary { padding: 11px; gap: 10px }
+  .home-summary p { font-size: 12px }
+  .home-summary small { font-size: 11px }
 }
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="brand">⚔ Multiplikationsriket</div><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
@@ -656,6 +747,7 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify(s))}catch{notice='
 function nav(){return [['home','🏠 Hem'],['map','🗺️ Karta'],['game','⚔️ Spela'],['shop','⚒️ Smedjan'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${screen===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
 function fitGameViewport(){
  const playing=screen==='game';document.body.classList.toggle('playing',playing);
+ document.body.classList.toggle('home-screen',screen==='home');
  const layered=playing&&!!activeArena();document.body.classList.toggle('layered-battle',layered);
  const panel=document.querySelector('.game-panel');if(!playing||!panel)return;
  panel.style.zoom='1';panel.style.width='100%';
@@ -664,7 +756,39 @@ function fitGameViewport(){
  if(available>0&&needed>available){const scale=Math.max(.55,Math.min(1,available/needed));panel.style.zoom=String(scale);panel.style.width='100%'}
 }
 function render(){document.getElementById('nav').innerHTML=nav();document.getElementById('hud').textContent=`Nivå ${s.level} · 🪙 ${s.gold} · ❤️ ${s.hp}/${maxHp()}`;document.getElementById('main').innerHTML=({home:home,map:map,game:game,shop:shop,cards:cards,mastery:mastery,settings:settings})[screen]();fitGameViewport();}
-function home(){return `<div class="panel"><h1 class="title">Riddarens resa</h1><p>Från enkel äventyrare till rikets mäktigaste riddare. Utforska åtta världar, lär dig gångertabellerna 2–9 och samla 50 monsterkort!</p><div class="hero-banner">${heroVisual()}</div><p class="steptrack">🛡️ ${escapeHtml(equipmentSummary())}</p><p><b>Nuvarande värld:</b> ${WORLDS[s.world].name} · <b>Steg:</b> ${s.step}/12 · <b>Monsterkort:</b> ${s.cards.length}/50</p><div class="progress"><div style="width:${Math.min(100,s.xp/(s.level*90)*100)}%"></div></div><p class="steptrack">XP ${s.xp}/${s.level*90} till nästa nivå · 🔥 ${s.streak||0} rätt i rad · Rekord: ${s.bestStreak||0}</p><div class="actions"><button class="btn" data-nav="game">▶ ${s.step||s.battle?'Fortsätt äventyret':'Starta äventyret'}</button><button class="btn secondary" data-nav="map">Välj värld</button><button class="btn secondary" data-nav="mastery">📊 Mina framsteg</button></div><p class="hint">💡 Inga tidtagningar. Fel svar ger ledtrådar. Varje steg sparas.</p></div>`}
+function home() {
+  const world = WORLDS[s.world];
+  const continuing = s.step > 0 || s.battle || s.cleared.length > 0;
+  const hero = paintedHero(BATTLE_ARENAS[2]);
+  const nextLevel = s.level * 90;
+  return `<div class="home-page">
+    <section class="home-cover" aria-labelledby="home-title">
+      <img class="home-character" src="${hero}" alt="">
+      <div class="home-intro">
+        <h1 id="home-title">Riddarens resa</h1>
+        <p>Träna gångertabellerna 2–9 och samla monsterkort på vägen.</p>
+        <button class="btn home-start" data-nav="game">▶ ${continuing ? 'Fortsätt äventyret' : 'Starta äventyret'}</button>
+      </div>
+    </section>
+    <section class="panel home-summary" aria-label="Ditt äventyr">
+      <div>
+        <h2>${world.name}</h2>
+        <p>Steg ${s.step}/12 · ${s.cards.length}/${MONSTERS.length} monsterkort</p>
+        <small>${escapeHtml(equipmentSummary())}</small>
+      </div>
+      <div>
+        <h2>Nivå ${s.level}</h2>
+        <p>${s.xp}/${nextLevel} XP till nästa nivå</p>
+        <progress value="${s.xp}" max="${nextLevel}" aria-label="XP till nästa nivå"></progress>
+        <small>${s.streak || 0} rätt i rad · Rekord ${s.bestStreak || 0}</small>
+      </div>
+      <div class="home-links">
+        <button class="btn secondary" data-nav="map">🗺️ Välj värld</button>
+        <button class="btn secondary" data-nav="mastery">📊 Mina framsteg</button>
+      </div>
+    </section>
+  </div>`;
+}
 function factStats(a,b){return s.math[a+'x'+b]||{right:0,independent:0,level:0,days:[],errors:0}}
 function factLevel(a,b){return Math.max(0,Math.min(3,Number(factStats(a,b).level)||0))}
 function tableProgress(n){let levels=Array.from({length:10},(_,i)=>factLevel(n,i+1));return {known:levels.filter(x=>x>=2).length,mastered:levels.filter(x=>x===3).length,started:levels.filter(x=>x>0).length}}
@@ -704,9 +828,16 @@ function activeArena() {
   return s.battle ? BATTLE_ARENAS[WORLDS[s.world].n] : undefined;
 }
 
+function heroVariant() {
+  return s.equipment.armor || s.level >= 5 ? 'knight' : 'adventurer';
+}
+
+function paintedHero(theme) {
+  return theme?.heroes?.[heroVariant()];
+}
+
 function heroVisual(painted) {
-  const hero = s.equipment.armor || s.level >= 5 ? 'knight' : 'adventurer';
-  const image = painted || 'assets/' + hero + '.svg';
+  const image = painted || 'assets/' + heroVariant() + '.svg';
   return '<div class="hero-visual"><img src="' + image + '" alt="Din riddare">' + (painted ? '' : gearOverlay()) + '</div>';
 }
 
@@ -739,7 +870,7 @@ function scene() {
   const routeX = route ? 4 + (s.step - route.start) * 18 : 0;
   const heroX = b ? 16 : route ? routeX : Math.min(53, 12 + s.step * 3.5);
   const theme = arena || (route && BATTLE_ARENAS[table]);
-  const painted = theme?.heroes?.[s.equipment.armor || s.level >= 5 ? 'knight' : 'adventurer'];
+  const painted = paintedHero(theme);
   const gear = painted ? sceneGear() : '';
   const palette = ['#efbf65','#b4e8de','#c9a17b','#8cc66e','#ff733b','#ff9a47','#a88be0','#9dc8ff'];
   const sceneArt = arena
