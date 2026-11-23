@@ -729,7 +729,9 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   .encounter-light { display: none }
 }
 
-#hud { white-space: nowrap; font-variant-numeric: tabular-nums }
+#hud { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 8px; max-width: 72%; font-variant-numeric: tabular-nums }
+#hud > span { white-space: nowrap }
+#hud-diamonds { color: #a6f1ff }
 .victory-card {
   border-color: #e0b65f;
   background: radial-gradient(ellipse at 50% 0%, #46472d, #19312c 62%, #142421);
@@ -1054,6 +1056,7 @@ function restoreSave(saved) {
     state.question = null;
     state.answer = '';
   }
+  if (state.event?.type === 'challenge-offer') state.event = null;
   if (state.event?.type === 'gear-offer' && !knownItem(state.event.item)) state.event = null;
   if (state.gearChallenge && !knownItem(state.gearChallenge.item)) state.gearChallenge = null;
   return state;
@@ -1067,7 +1070,8 @@ function load() {
     return fresh();
   }
 }
-let s=load(),screen=s.pendingDefense||s.gearChallenge||s.battle?.doubleDeadline?'game':'home',busy=false,notice='';
+let s=load(),screen=s.pendingDefense||s.gearChallenge||s.battle?.doubleDeadline?'game':
+  s.tableChallenge||s.event?.type==='challenge-result'?'challenge':'home',busy=false,notice='';
 if(s.phase==='battle'&&!s.battle){s.phase='travel';s.question=null}
 if(s.phase==='travel'&&s.battle){s.phase='battle'}
 let audioCtx;function beep(freq=400){if(!s.sound)return;try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.type='triangle';g.gain.setValueAtTime(.04,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch{}}
@@ -1196,7 +1200,7 @@ function dmg() {
   return weaponDamage(ITEMS.find(item => item.id === s.equipment.weapon));
 }
 function escapeHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function nav(){return [['home','🏠 Hem'],['map','🗺️ Karta'],['game','⚔️ Spela'],['shop','⚒️ Smedjan'],['inventory','🎒 Inventarie'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${screen===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
+function nav(){return [['home','🏠 Hem'],['map','🗺️ Karta'],['game','⚔️ Spela'],['challenge','💎 Utmaning'],['shop','⚒️ Smedjan'],['inventory','🎒 Inventarie'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${screen===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
 function fitGameViewport(){
  const playing=screen==='game';document.body.classList.toggle('playing',playing);
  document.body.classList.toggle('home-screen',screen==='home');
@@ -1211,16 +1215,18 @@ let collectingVictory = null;
 
 function renderHud(progress = collectingVictory || s.event?.reward?.before || s) {
   const hud = document.getElementById('hud');
-  hud.innerHTML = `<span id="hud-level">Nivå ${escapeHtml(progress.level)}</span><span aria-hidden="true"> · </span>
-    <span id="hud-gold">🪙 ${escapeHtml(progress.gold)}</span><span aria-hidden="true"> · </span>
-    <span id="hud-xp">⭐ ${escapeHtml(progress.xp)} XP</span><span aria-hidden="true"> · </span>
+  const diamonds = bestChallengeDiamonds();
+  hud.innerHTML = `<span id="hud-level">Nivå ${escapeHtml(progress.level)}</span>
+    <span id="hud-gold">🪙 ${escapeHtml(progress.gold)}</span>
+    <span id="hud-xp">⭐ ${escapeHtml(progress.xp)} XP</span>
+    <span id="hud-diamonds" aria-label="${diamonds} ${diamonds === 1 ? 'diamant' : 'diamanter'}">💎 ${diamonds}</span>
     <span>❤️ ${escapeHtml(s.hp)}/${maxHp()}</span>`;
 }
 
 function render(){
   document.getElementById('nav').innerHTML=nav();
   renderHud();
-  document.getElementById('main').innerHTML=({home,map,game,shop,inventory,cards,mastery,settings})[screen]();
+  document.getElementById('main').innerHTML=({home,map,game,challenge,shop,inventory,cards,mastery,settings})[screen]();
   fitGameViewport();
 }
 function home() {
@@ -1782,11 +1788,16 @@ function diamondScale(count) {
     `<span aria-hidden="true" class="${n <= count ? 'earned' : ''}">${n <= count ? '◆' : '◇'}</span>`).join('')}</div>`;
 }
 
+function bestChallengeDiamonds() {
+  return s.challengeHistory.reduce((record, round) => Math.max(record, round.diamonds), 0);
+}
+
 function challengeHistoryUI() {
   const rounds = s.challengeHistory;
-  const best = rounds.reduce((record, round) => Math.max(record, round.diamonds), 0);
+  const best = bestChallengeDiamonds();
   return `<section class="challenge-section"><h3>Gångertabellsutmaning</h3>
-    <p>Bästa runda · ${best} av 10 diamanter</p>${diamondScale(best)}
+    <p>Bästa runda · ${best} av 10 diamanter</p>
+    <p><strong>${best ? best * 10 + '-klubben' : 'Ingen klubb ännu'}</strong></p>${diamondScale(best)}
     ${rounds.length ? `<details open><summary>Historik · ${rounds.length} rundor</summary>
       <ol class="challenge-logs">${rounds.slice().reverse().map(round => `<li>
         <strong>${escapeHtml(round.correct)}/${escapeHtml(round.total)} rätt · ${round.diamonds} 💎</strong>
@@ -1817,19 +1828,25 @@ function dismissChallengeEvent() {
   render();
 }
 
-function showChallengeOffer() {
+function challenge() {
   const tables = challengeTables();
-  const dialog = challengeDialog('Vill du köra gångertabellsutmaningen?', `
-    <p>${escapeHtml(CHALLENGE_MODES[s.challengeSettings.mode])} · ${tables.length * 10} tal · 5 minuter</p>
-    <p>Tal du missar kommer tillbaka sist. Varje tiotal rätt ger en diamant.</p>
-    <div class="actions"><button class="btn" id="challenge-start" ${tables.length ? '' : 'disabled'}>Starta utmaningen</button>
-    <button class="btn secondary" id="challenge-skip">Spela vidare</button></div>`);
-  dialog.querySelector('#challenge-start').onclick = () => startTableChallenge(tables);
-  dialog.querySelector('#challenge-skip').onclick = dismissChallengeEvent;
+  return `<section class="panel">
+    <h2 class="title">💎 Gångertabellsutmaning</h2>
+    <div class="challenge-section">
+      <p><strong>${escapeHtml(CHALLENGE_MODES[s.challengeSettings.mode])}</strong> · ${tables.length * 10} tal · 5 minuter</p>
+      ${tables.length ? `<p>Tabeller ${tables.join(', ')}. Tal du missar kommer tillbaka sist.</p>` :
+        '<p>Besegra en boss eller välj andra tabeller i Inställningar.</p>'}
+      <div class="actions">
+        <button class="btn" type="button" data-action="start-challenge" ${!tables.length || s.battle?.doubleDeadline || s.event ? 'disabled' : ''}>Starta utmaningen</button>
+        <button class="btn secondary" type="button" data-nav="settings">Ändra inställningar</button>
+      </div>
+    </div>
+  </section>`;
 }
 
-function startTableChallenge(tables) {
-  if (s.event?.type !== 'challenge-offer' || !tables.length) return;
+function startTableChallenge() {
+  const tables = challengeTables();
+  if (!tables.length || s.tableChallenge || s.event || s.battle?.doubleDeadline) return;
   const queue = tables.flatMap(a => CHALLENGE_TABLES.map(b => [a, b]));
   for (let i = queue.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -1838,7 +1855,6 @@ function startTableChallenge(tables) {
   const startedAt = Date.now();
   s.tableChallenge = { tables, queue, total: queue.length, correct: 0, wrong: 0,
     answer: '', feedback: '', startedAt, deadline: startedAt + CHALLENGE_MS };
-  s.event = null;
   save();
   showTableChallenge();
 }
@@ -1855,6 +1871,7 @@ function finishTableChallenge(reason) {
   s.tableChallenge = null;
   s.event = { type: 'challenge-result', result };
   save();
+  renderHud();
   showChallengeResult(result);
 }
 
@@ -2275,7 +2292,7 @@ function collectVictory(dialog, event, reward) {
   const gold = dialog.querySelector('[data-victory-reward="gold"]').getBoundingClientRect();
   const xp = dialog.querySelector('[data-victory-reward="xp"]').getBoundingClientRect();
   dialog.remove();
-  s.event = event.boss ? { type: 'challenge-offer' } : null;
+  s.event = null;
   notice = '';
   save();
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2283,7 +2300,6 @@ function collectVictory(dialog, event, reward) {
   render();
   if (reduceMotion) {
     actionSound('collect');
-    showPendingEvent();
     return;
   }
 
@@ -2314,7 +2330,6 @@ function collectVictory(dialog, event, reward) {
     collectingVictory = null;
     busy = false;
     renderHud();
-    showPendingEvent();
   };
   requestAnimationFrame(tick);
 }
@@ -2324,8 +2339,6 @@ function showPendingEvent(){
   if (!event) return;
   if (event.type === 'gear-offer') {
     showGearOffer();
-  } else if (event.type === 'challenge-offer') {
-    showChallengeOffer();
   } else if (event.type === 'challenge-result') {
     showChallengeResult(event.result);
   } else if (event.type === 'victory') {
@@ -2604,7 +2617,7 @@ function winBattle() {
   s.question = null;
   s.hp = Math.min(maxHp(), s.hp + balance.heal);
   s.event = {
-    type: 'victory', boss: battle.boss,
+    type: 'victory',
     title: battle.boss ? '🏆 ' + WORLDS[world].boss + ' besegrad!' : '⚔️ Monster besegrat!',
     card: newCard ? battle.card : null, monster: battle.card, collectionBonus,
     reward: { gold: earned.gold + (collectionBonus ? 75 : 0), xp: earned.xp + (collectionBonus ? 50 : 0), before },
@@ -2642,7 +2655,7 @@ function key(k){if(busy||encounterActive()||s.event||s.pendingDefense||s.gearCha
 function exportSave(){let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='multiplikationsriket-sparfil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 document.addEventListener('pointerdown',unlockAudio,{passive:true});
 document.addEventListener('touchend',unlockAudio,{passive:true});
-document.addEventListener('click',e=>{unlockAudio();if(busy||s.pendingDefense||s.gearChallenge||s.tableChallenge)return;let b=e.target.closest('[data-nav],[data-world],[data-key],[data-move],[data-buy],[data-equip],[data-action],[data-card],[data-gear-slot],[data-try-item],[data-outfit],[data-clear-fitting],[data-remove-gear]');if(!b)return;if(b.dataset.nav){if(b.dataset.nav!==screen)fittingGear=null;screen=b.dataset.nav;notice='';render();if(screen==='game')recoverGame()}else if(b.dataset.world!==undefined){let i=Number(b.dataset.world);if(i===0||s.cleared.includes(i-1)){selectedMapWorld=i;render()}}else if(b.dataset.card){let m=MONSTERS.find(x=>x.id===Number(b.dataset.card));if(m&&s.cards.includes(m.id))modal('📖 '+m.name,'Kort #'+m.id+' · '+rarity(m.id)+' · '+WORLDS[m.world].name+' · '+m.hp+' HP',()=>{});}else if(b.dataset.key)key(b.dataset.key);else if(b.dataset.move)move(b.dataset.move);else if(b.dataset.buy){let i=ITEMS.find(x=>x.id===b.dataset.buy);if(i&&itemAvailable(i)&&s.gold>=i.price&&!s.inventory.includes(i.id)){s.gold-=i.price;s.inventory.push(i.id);save();render()}}else if(b.dataset.equip){let i=ITEMS.find(x=>x.id===b.dataset.equip);if(i&&s.inventory.includes(i.id)){equipItem(i);save();render();document.querySelector('.wardrobe-preview')?.scrollIntoView({ block:'nearest' })}}else if(b.dataset.action==='hint'){s.hint=true;notice='Du kan använda upprepad addition.';save();render()}else if(b.dataset.action==='sound'){s.sound=!s.sound;save();render();if(s.sound){unlockAudio();actionSound('reward')}}else if(b.dataset.action==='test-sound'){testAudio()}else if(b.dataset.action==='play-selected-world'){let i=selectedMapWorld===null?s.world:selectedMapWorld;if(i===0||s.cleared.includes(i-1)){if(i!==s.world){s.world=i;s.step=0;s.event=null;s.chest=null;s.gearRoute=null;s.phase='travel';s.battle=null;s.question=null;save()}selectedMapWorld=null;screen='game';notice='';render();recoverGame()}}else if(b.dataset.action==='export')exportSave();else if(b.dataset.action==='reset'){if(confirm('Vill du verkligen radera alla framsteg?')){s=fresh();save();screen='home';render()}}else handleWardrobeInput(b);});
+document.addEventListener('click',e=>{unlockAudio();if(busy||s.pendingDefense||s.gearChallenge||s.tableChallenge)return;let b=e.target.closest('[data-nav],[data-world],[data-key],[data-move],[data-buy],[data-equip],[data-action],[data-card],[data-gear-slot],[data-try-item],[data-outfit],[data-clear-fitting],[data-remove-gear]');if(!b)return;if(b.dataset.nav){if(b.dataset.nav==='challenge'&&s.battle?.doubleDeadline)return;if(b.dataset.nav!==screen)fittingGear=null;screen=b.dataset.nav;notice='';render();if(screen==='game')recoverGame()}else if(b.dataset.world!==undefined){let i=Number(b.dataset.world);if(i===0||s.cleared.includes(i-1)){selectedMapWorld=i;render()}}else if(b.dataset.card){let m=MONSTERS.find(x=>x.id===Number(b.dataset.card));if(m&&s.cards.includes(m.id))modal('📖 '+m.name,'Kort #'+m.id+' · '+rarity(m.id)+' · '+WORLDS[m.world].name+' · '+m.hp+' HP',()=>{});}else if(b.dataset.key)key(b.dataset.key);else if(b.dataset.move)move(b.dataset.move);else if(b.dataset.buy){let i=ITEMS.find(x=>x.id===b.dataset.buy);if(i&&itemAvailable(i)&&s.gold>=i.price&&!s.inventory.includes(i.id)){s.gold-=i.price;s.inventory.push(i.id);save();render()}}else if(b.dataset.equip){let i=ITEMS.find(x=>x.id===b.dataset.equip);if(i&&s.inventory.includes(i.id)){equipItem(i);save();render();document.querySelector('.wardrobe-preview')?.scrollIntoView({ block:'nearest' })}}else if(b.dataset.action==='start-challenge'){startTableChallenge()}else if(b.dataset.action==='hint'){s.hint=true;notice='Du kan använda upprepad addition.';save();render()}else if(b.dataset.action==='sound'){s.sound=!s.sound;save();render();if(s.sound){unlockAudio();actionSound('reward')}}else if(b.dataset.action==='test-sound'){testAudio()}else if(b.dataset.action==='play-selected-world'){let i=selectedMapWorld===null?s.world:selectedMapWorld;if(i===0||s.cleared.includes(i-1)){if(i!==s.world){s.world=i;s.step=0;s.event=null;s.chest=null;s.gearRoute=null;s.phase='travel';s.battle=null;s.question=null;save()}selectedMapWorld=null;screen='game';notice='';render();recoverGame()}}else if(b.dataset.action==='export')exportSave();else if(b.dataset.action==='reset'){if(confirm('Vill du verkligen radera alla framsteg?')){s=fresh();save();screen='home';render()}}else handleWardrobeInput(b);});
 document.addEventListener('change',async e=>{if(e.target.id!=='import')return;try{let imported=JSON.parse(await e.target.files[0].text());if(imported.version!==1||!Array.isArray(imported.cards)||!Array.isArray(imported.cleared)||!imported.math||!Number.isInteger(imported.world)||imported.world<0||imported.world>7)throw Error('Fel format');if(confirm('Ersätt dina nuvarande framsteg med sparfilen?')){s=restoreSave(imported);save();screen='home';fittingGear=null;render();if(s.tableChallenge)showTableChallenge();else if(s.event)showPendingEvent()}}catch{alert('Kunde inte läsa sparfilen.')}});
 function syncVisibleViewport(){const h=window.visualViewport?.height||window.innerHeight;document.documentElement.style.setProperty('--visible-height',h+'px')}syncVisibleViewport();window.visualViewport?.addEventListener('resize',syncVisibleViewport);window.addEventListener('orientationchange',()=>{syncVisibleViewport();fitGameViewport()});window.visualViewport?.addEventListener('resize',fitGameViewport);
 render();if(s.tableChallenge)showTableChallenge();else if(s.gearChallenge)showGearChallenge();else if(s.pendingDefense)showDefense();else if(s.event)showPendingEvent();else if(s.battle?.doubleDeadline)recoverGame();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
