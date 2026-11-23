@@ -1012,6 +1012,11 @@ function restoreSave(saved) {
   state.inventory = state.inventory.filter(knownItem);
   state.equipment = Object.fromEntries(Object.entries(state.equipment).filter(([,id]) => knownItem(id)));
   state.hp = Math.min(state.hp, maxHp(state.equipment));
+  if (state.battle?.move === 'power' && !Number.isFinite(state.battle.doubleDeadline)) {
+    state.battle = { ...state.battle, move: null, pending: 0 };
+    state.question = null;
+    state.answer = '';
+  }
   if (state.event?.type === 'gear-offer' && !knownItem(state.event.item)) state.event = null;
   if (state.gearChallenge && !knownItem(state.gearChallenge.item)) state.gearChallenge = null;
   return state;
@@ -1025,7 +1030,7 @@ function load() {
     return fresh();
   }
 }
-let s=load(),screen=s.pendingDefense||s.gearChallenge?'game':'home',busy=false,notice='';
+let s=load(),screen=s.pendingDefense||s.gearChallenge||s.battle?.doubleDeadline?'game':'home',busy=false,notice='';
 if(s.phase==='battle'&&!s.battle){s.phase='travel';s.question=null}
 if(s.phase==='travel'&&s.battle){s.phase='battle'}
 let audioCtx;function beep(freq=400){if(!s.sound)return;try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.type='triangle';g.gain.setValueAtTime(.04,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch{}}
@@ -1147,11 +1152,11 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify(s))}catch{notice='
 function maxHp(equipment = s.equipment) {
   return 100 + Object.values(equipment).reduce((sum,id) => sum + (ITEMS.find(i=>i.id===id)?.hp || 0), 0);
 }
-function dmg() {
-  return 15 + (ITEMS.find(i=>i.id===s.equipment.weapon)?.damage || 0);
+function weaponDamage(item) {
+  return 15 + (item?.damage || 0);
 }
-function powerDamage() {
-  return 2 * dmg() + 5;
+function dmg() {
+  return weaponDamage(ITEMS.find(item => item.id === s.equipment.weapon));
 }
 function escapeHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function nav(){return [['home','🏠 Hem'],['map','🗺️ Karta'],['game','⚔️ Spela'],['shop','⚒️ Smedjan'],['inventory','🎒 Inventarie'],['cards','📖 Monsterkort'],['mastery','📊 Framsteg'],['settings','⚙️ Inställningar']].map(([id,label])=>`<button class="btn ${screen===id?'':'secondary'} small" data-nav="${id}">${label}</button>`).join('')}
@@ -1285,7 +1290,7 @@ function comboMeter() {
   </div>`;
 }
 
-function questionUI(){if(!s.question)chooseQuestion();let q=s.question;return `<div class="controls"><div class="question"><div class="steptrack">${s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)} ${s.hint?`<span class="hint">Räkna: ${Array.from({length:q.b},()=>q.a).join(' + ')} = ?</span>`:''}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
+function questionUI(){if(!s.question)chooseQuestion();let q=s.question;return `<div class="controls"><div class="question"><div class="steptrack">${s.battle?.doubleDeadline ? `Dubbelslag ${s.battle.pending + 1}/2 · <span id="double-time">${doubleSecondsLeft(s.battle)} s</span>` : s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)} ${s.hint?`<span class="hint">Räkna: ${Array.from({length:q.b},()=>q.a).join(' + ')} = ?</span>`:''}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
 function rarity(id){return id%25===0?'Legendarisk':id%10===0?'Episk':id%4===0?'Sällsynt':'Vanlig'}
 function equipmentSummary(){return ['weapon','helmet','armor','shield'].map(slot=>ITEMS.find(i=>i.id===s.equipment[slot])).filter(Boolean).map(i=>i.art+' '+i.name).join(' · ')||'Äventyrarens startutrustning'}
 const PAINTED_WORLDS = {
@@ -1567,14 +1572,14 @@ function game() {
   const fighting = s.phase === 'battle';
   const intro = encounterActive(battle);
   const attacks = fighting ? `<div class="actions">${[
-    ['slash', (s.equipment.weapon ? '⚔️ Svärd ' : '👊 Slag ') + dmg()], ['power', '💥 Kraft ' + powerDamage() + ' (2 tal)']
+    ['slash', (s.equipment.weapon ? '⚔️ Svärd ' : '👊 Slag ') + dmg()], ['power', '💥 Dubbelslag ' + (2 * dmg()) + ' (5 s)']
   ].map(([action,label]) => `<button class="btn ${battle?.move === action ? '' : 'secondary'} small"
-    data-move="${action}" ${intro || battle?.pending ? 'disabled' : ''}>${label}</button>`).join('')}</div>` : '';
+    data-move="${action}" ${intro || battle?.doubleDeadline ? 'disabled' : ''}>${label}</button>`).join('')}</div>` : '';
   const bossPhase = fighting && battle?.boss ? `<div class="boss-phase">👑 BOSS · Fas ${battle.phase || 1}/2 ·
     ${battle.phase === 2 ? '⚡ ' + BOSS_SKILLS[s.world].name : 'Vid halva hälsan väcks bossens kraft'}</div>` : '';
   const prompt = s.event ? '<p class="hint">🎁 En händelse väntar. Tryck på Fortsätt.</p>' :
     intro ? '<p class="hint">Gör dig redo!</p>' :
-    fighting && !battle?.move ? '<p class="hint">Välj din attack för att få en matteuppgift.</p>' : questionUIIfReady();
+    fighting && !battle?.move ? `<p class="hint">${escapeHtml(notice || 'Välj din attack för att få en matteuppgift.')}</p>` : questionUIIfReady();
   const advice = fighting ? battle?.boss ?
     '👑 Blockera bossens motattacker inom 5 sekunder. Vid 0 HP börjar världen om.' :
     'Fienden slår tillbaka. Vid 0 HP börjar du om på världen.' :
@@ -1604,7 +1609,7 @@ function equipItem(item) {
 }
 
 function itemStats(item) {
-  if (item.slot === 'weapon') return (15 + item.damage) + ' svärdskada';
+  if (item.slot === 'weapon') return weaponDamage(item) + ' svärdskada';
   if (item.hp) return '+' + item.hp + ' max HP';
   return 'Minskar skadan med ' + item.block + ' vid missad blockering';
 }
@@ -1755,8 +1760,8 @@ function correctReward(kind,assisted,bonus=0,damage=0){
   block: 'Bossens attack stoppades · 0 skada',
   chest: '+'+balance.chest.gold+' guld · +'+balance.chest.xp+' XP',
   travel: 'Ett steg framåt · +'+balance.stepXp+' XP',
-  charge: 'Ett rätt svar kvar till kraftattacken',
-  power: 'Kraftattack · −' + damage + ' fiende-HP',
+  'double-ready': 'Ett tal kvar till dubbelslaget',
+  power: 'Dubbelslag · −' + damage + ' fiende-HP',
   hit: 'Träff · −' + damage + ' fiende-HP'
  };
  const title = assisted ? 'Du löste det!' : kind === 'block' ? 'Blockerat!' : kind === 'chest' ? 'Kistan öppnades!' : 'Rätt svar!';
@@ -2095,6 +2100,8 @@ function recoverGame(){
  if(s.pendingDefense){showDefense();return}
  if(s.event){showPendingEvent();return}
  if(s.phase==='battle'&&s.battle&&s.battle.hp<=0){winBattle();return}
+ if(s.battle&&!s.hp){loseBattle();return}
+ if(s.battle?.doubleDeadline){watchDoubleStrike(s.battle);return}
  if(encounterActive()){scheduleEncounterEnd(s.battle);return}
  if(s.phase==='battle'&&s.battle&&s.battle.move&&!s.question){chooseQuestion();save();render()}
 }
@@ -2143,11 +2150,12 @@ function monsterCounterattack(battle) {
   return damage ? 'Fienden slog tillbaka: −' + damage + ' HP.' : 'Du blockerade attacken!';
 }
 
-function wrongAnswer(battle) {
+function wrongAnswer(battle, doubleFailure = '') {
   s.streak = 0;
   s.answer = '';
   s.question = null;
   notice = 'Försök igen med ett annat tal. Du kan använda en ledtråd.';
+  if (doubleFailure) clearDoubleStrike(battle);
   actionSound('wrong');
   if (battle?.boss) {
     notice = bossCounterattack(battle, 'wrong');
@@ -2159,11 +2167,12 @@ function wrongAnswer(battle) {
         return;
       }
     }
-    chooseQuestion();
+    if (!battle || battle.move) chooseQuestion();
   }
+  if (doubleFailure) notice = doubleFailure + ' ' + notice;
   save();
   render();
-  if (battle?.boss) showDefense();
+  if (battle?.boss && screen === 'game') showDefense();
   else if (battle) animateCounter();
   else wrongFeedback();
 }
@@ -2189,29 +2198,57 @@ function correctTravel(assisted, bonus) {
   correctReward('chest', assisted, bonus);
 }
 
+const DOUBLE_STRIKE_MS = 5000;
+let doubleStrikeTimer;
+
+function doubleSecondsLeft(battle) {
+  return Math.max(0, Math.ceil((battle.doubleDeadline - Date.now()) / 1000));
+}
+
+function clearDoubleStrike(battle) {
+  clearInterval(doubleStrikeTimer);
+  delete battle.doubleDeadline;
+  battle.move = null;
+  battle.pending = 0;
+}
+
+function doubleStrikeExpired(battle) {
+  if (!battle?.doubleDeadline || Date.now() < battle.doubleDeadline) return false;
+  wrongAnswer(battle, 'Tiden tog slut för dubbelslaget!');
+  return true;
+}
+
+function watchDoubleStrike(battle) {
+  clearInterval(doubleStrikeTimer);
+  if (doubleStrikeExpired(battle)) return;
+  doubleStrikeTimer = setInterval(() => {
+    if (s.battle !== battle || !battle.doubleDeadline) {
+      clearInterval(doubleStrikeTimer);
+      return;
+    }
+    if (doubleStrikeExpired(battle)) return;
+    const time = document.getElementById('double-time');
+    const label = doubleSecondsLeft(battle) + ' s';
+    if (time && time.textContent !== label) time.textContent = label;
+  }, 100);
+}
+
 function correctBattle(battle, assisted, bonus) {
-  const action = battle.move;
-  if (action === 'power' && ++battle.pending < 2) {
-    s.question = null;
-    s.answer = '';
-    notice = 'Ett rätt svar kvar till kraftattacken.';
-    if (battle.boss) bossCounterattack(battle, 'charge');
-    else chooseQuestion();
-    save();
+  const double = battle.move === 'power';
+  if (double && ++battle.pending === 1) {
+    notice = 'Ett tal kvar!';
+    chooseQuestion();
     render();
-    correctReward('charge', assisted, bonus);
-    if (battle.boss) setTimeout(showDefense, 650);
+    if (bonus) correctReward('double-ready', assisted, bonus);
     return;
   }
 
-  let damage = action === 'power' ? powerDamage() : dmg();
-  if (assisted) damage = Math.max(8, damage - 5);
-  const inflicted = Math.min(battle.hp, damage);
+  const damage = dmg();
+  const inflicted = Math.min(battle.hp, damage * (double ? 2 : 1));
   battle.hp -= inflicted;
   s.question = null;
   s.answer = '';
-  battle.move = null;
-  battle.pending = 0;
+  clearDoubleStrike(battle);
   const defeated = battle.hp === 0;
   if (!defeated) {
     battle.round = (battle.round || 0) + 1;
@@ -2222,22 +2259,34 @@ function correctBattle(battle, assisted, bonus) {
       notice = '🔥 Fas 2! ' + battle.name + ' får en ny specialattack. ';
       battleSound('phase');
     }
-    notice += battle.boss ? bossCounterattack(battle, 'turn') : monsterCounterattack(battle);
-    if (!s.hp) {
-      loseBattle();
-      return;
-    }
+    if (!double) notice += battle.boss ? bossCounterattack(battle, 'turn') : monsterCounterattack(battle);
   }
 
   busy = true;
   save();
   render();
-  correctReward(action === 'power' ? 'power' : 'hit', assisted, bonus, inflicted);
-  document.getElementById('hero')?.classList.add('hit');
-  document.getElementById('enemy')?.classList.add('hurt');
+  correctReward(double ? 'power' : 'hit', assisted, bonus, inflicted);
   const strike = s.equipment.weapon ? '⚔️' : '👊';
-  combatFx('hero', { icon: action === 'power' ? '💥' + strike : strike }, inflicted);
-  battleSound(action === 'power' ? 'power' : 'hit');
+  function animateStrike(amount) {
+    const hero = document.getElementById('hero');
+    const enemy = document.getElementById('enemy');
+    hero?.classList.remove('hit');
+    enemy?.classList.remove('hurt');
+    void hero?.offsetWidth;
+    hero?.classList.add('hit');
+    enemy?.classList.add('hurt');
+    combatFx('hero', { icon: strike }, amount || null);
+    battleSound('hit');
+  }
+
+  const firstHit = Math.min(damage, inflicted);
+  animateStrike(firstHit);
+  const strikeDuration = 850;
+  if (double) {
+    setTimeout(() => {
+      if (s.battle === battle) animateStrike(inflicted - firstHit);
+    }, strikeDuration);
+  }
   setTimeout(() => {
     if (s.battle !== battle) {
       busy = false;
@@ -2254,22 +2303,25 @@ function correctBattle(battle, assisted, bonus) {
       return;
     }
     busy = false;
-    if (battle.boss) showDefense();
-    else animateCounter();
-  }, 850);
+    if (!s.hp) loseBattle();
+    else if (!double) {
+      if (battle.boss) showDefense();
+      else animateCounter();
+    }
+  }, strikeDuration * (double ? 2 : 1));
 }
 
 function answer() {
   if (busy || encounterActive() || s.event || s.pendingDefense || s.gearChallenge || !s.question || !s.answer) return;
   const battle = s.battle;
-  if (s.phase === 'battle' && !battle?.move) return;
+  if (doubleStrikeExpired(battle) || (s.phase === 'battle' && !battle?.move)) return;
   const question = s.question;
   const correct = Number(s.answer) === question.a * question.b;
   const assisted = s.hint || s.mistakes > 0;
   s.lastQuestion = question;
   recordMath(question, correct, assisted);
   if (!correct) {
-    wrongAnswer(battle);
+    wrongAnswer(battle, battle?.doubleDeadline ? 'Dubbelslaget avbröts efter ett felaktigt svar.' : '');
     return;
   }
   const bonus = updateCombo(assisted);
@@ -2322,19 +2374,28 @@ function winBattle() {
   showPendingEvent();
 }
 function move(action) {
-  if (!s.battle || encounterActive() || busy || s.event || s.pendingDefense || s.gearChallenge || s.battle.pending) return;
-  s.battle.move = action;
-  if (!s.question) chooseQuestion();
-  notice = action === 'power' ? 'Två rätta svar laddar kraftattacken.' : 'Lös ett tal för att attackera.';
+  const battle = s.battle;
+  if (!battle || encounterActive() || busy || s.event || s.pendingDefense || s.gearChallenge || battle.doubleDeadline) return;
+  battle.move = action;
+  if (action === 'power') {
+    battle.doubleDeadline = Date.now() + DOUBLE_STRIKE_MS;
+    battle.pending = 0;
+    chooseQuestion();
+    notice = 'Två rätt på fem sekunder!';
+    watchDoubleStrike(battle);
+  } else {
+    if (!s.question) chooseQuestion();
+    notice = 'Lös ett tal för att attackera.';
+  }
   save();
   render();
 }
-function key(k){if(busy||encounterActive()||s.event||s.pendingDefense||s.gearChallenge)return;if(k==='✓'){answer();return}if(k==='⌫')s.answer=s.answer.slice(0,-1);else if(s.answer.length<3)s.answer+=k;save();render()}
+function key(k){if(busy||encounterActive()||s.event||s.pendingDefense||s.gearChallenge||doubleStrikeExpired(s.battle))return;if(k==='✓'){answer();return}if(k==='⌫')s.answer=s.answer.slice(0,-1);else if(s.answer.length<3)s.answer+=k;save();render()}
 function exportSave(){let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='multiplikationsriket-sparfil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 document.addEventListener('pointerdown',unlockAudio,{passive:true});
 document.addEventListener('touchend',unlockAudio,{passive:true});
 document.addEventListener('click',e=>{unlockAudio();if(busy||s.pendingDefense||s.gearChallenge)return;let b=e.target.closest('[data-nav],[data-world],[data-key],[data-move],[data-buy],[data-equip],[data-action],[data-card],[data-gear-slot],[data-try-item],[data-outfit],[data-clear-fitting],[data-remove-gear]');if(!b)return;if(b.dataset.nav){if(b.dataset.nav!==screen)fittingGear=null;screen=b.dataset.nav;notice='';render();if(screen==='game')recoverGame()}else if(b.dataset.world!==undefined){let i=Number(b.dataset.world);if(i===0||s.cleared.includes(i-1)){selectedMapWorld=i;render()}}else if(b.dataset.card){let m=MONSTERS.find(x=>x.id===Number(b.dataset.card));if(m&&s.cards.includes(m.id))modal('📖 '+m.name,'Kort #'+m.id+' · '+rarity(m.id)+' · '+WORLDS[m.world].name+' · '+m.hp+' HP',()=>{});}else if(b.dataset.key)key(b.dataset.key);else if(b.dataset.move)move(b.dataset.move);else if(b.dataset.buy){let i=ITEMS.find(x=>x.id===b.dataset.buy);if(i&&itemAvailable(i)&&s.gold>=i.price&&!s.inventory.includes(i.id)){s.gold-=i.price;s.inventory.push(i.id);save();render()}}else if(b.dataset.equip){let i=ITEMS.find(x=>x.id===b.dataset.equip);if(i&&s.inventory.includes(i.id)){equipItem(i);save();render();document.querySelector('.wardrobe-preview')?.scrollIntoView({ block:'nearest' })}}else if(b.dataset.action==='hint'){s.hint=true;notice='Du kan använda upprepad addition.';save();render()}else if(b.dataset.action==='sound'){s.sound=!s.sound;save();render();if(s.sound){unlockAudio();actionSound('reward')}}else if(b.dataset.action==='test-sound'){testAudio()}else if(b.dataset.action==='play-selected-world'){let i=selectedMapWorld===null?s.world:selectedMapWorld;if(i===0||s.cleared.includes(i-1)){if(i!==s.world){s.world=i;s.step=0;s.event=null;s.chest=null;s.gearRoute=null;s.phase='travel';s.battle=null;s.question=null;save()}selectedMapWorld=null;screen='game';notice='';render();recoverGame()}}else if(b.dataset.action==='export')exportSave();else if(b.dataset.action==='reset'){if(confirm('Vill du verkligen radera alla framsteg?')){s=fresh();save();screen='home';render()}}else handleWardrobeInput(b);});
 document.addEventListener('change',async e=>{if(e.target.id!=='import')return;try{let imported=JSON.parse(await e.target.files[0].text());if(imported.version!==1||!Array.isArray(imported.cards)||!Array.isArray(imported.cleared)||!imported.math||!Number.isInteger(imported.world)||imported.world<0||imported.world>7)throw Error('Fel format');if(confirm('Ersätt dina nuvarande framsteg med sparfilen?')){s=restoreSave(imported);save();screen='home';fittingGear=null;render()}}catch{alert('Kunde inte läsa sparfilen.')}});
 function syncVisibleViewport(){const h=window.visualViewport?.height||window.innerHeight;document.documentElement.style.setProperty('--visible-height',h+'px')}syncVisibleViewport();window.visualViewport?.addEventListener('resize',syncVisibleViewport);window.addEventListener('orientationchange',()=>{syncVisibleViewport();fitGameViewport()});window.visualViewport?.addEventListener('resize',fitGameViewport);
-render();if(s.gearChallenge)showGearChallenge();else if(s.pendingDefense)showDefense();else if(s.event)showPendingEvent();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+render();if(s.gearChallenge)showGearChallenge();else if(s.pendingDefense)showDefense();else if(s.event)showPendingEvent();else if(s.battle?.doubleDeadline)recoverGame();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>
