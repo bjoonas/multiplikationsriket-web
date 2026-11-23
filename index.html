@@ -738,7 +738,10 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 }
 .victory-card h2 { margin: 0 0 12px }
 .victory-card .card-reveal { gap: 4px }
-.victory-card .card-reveal img { height: clamp(82px, 20dvh, 145px) }
+.victory-card .card-reveal img { height: clamp(82px, 20dvh, 145px); animation-name: victory-card-pop }
+@keyframes victory-card-pop { from { transform: scale(.8) } 70% { transform: scale(1.05) } }
+.victory-card .boss-card-reward { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px }
+.victory-card .boss-card-reward img { width: 44px; height: 44px; object-fit: contain }
 .victory-card .card-reveal span { color: #e2d3ac; font-size: 13px }
 .victory-rewards { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 13px 0 }
 .victory-chip {
@@ -1764,17 +1767,22 @@ function challengeTables() {
   return (mode === 'recent' ? cleared.slice(-2) : cleared).map(index => WORLDS[index].n);
 }
 
-function challengeSettingsUI() {
+function challengeTableControls() {
   const { mode, tables } = s.challengeSettings;
+  return `${mode === 'custom' ? `<fieldset><legend>Gångertabeller</legend><div class="challenge-tables">${CHALLENGE_TABLES.map(n =>
+      `<label><input type="checkbox" data-challenge-table="${n}" ${tables.includes(n) ? 'checked' : ''}
+        ${tables.length === 1 && tables[0] === n ? 'disabled' : ''}> ${n}</label>`).join('')}</div></fieldset>` : ''}
+    <p class="hint" id="challenge-table-count">${challengeTables().length * 10} tal med nuvarande val. Avklarade världar uppdateras efter varje bossseger.</p>`;
+}
+
+function challengeSettingsUI() {
+  const { mode } = s.challengeSettings;
   return `<section class="challenge-section">
     <h3>Gångertabellsutmaning</h3>
     <label for="challenge-mode">Vilka tal ska ingå?</label>
     <select id="challenge-mode">${Object.entries(CHALLENGE_MODES).map(([id, label]) =>
       `<option value="${id}" ${mode === id ? 'selected' : ''}>${label}</option>`).join('')}</select>
-    ${mode === 'custom' ? `<fieldset><legend>Gångertabeller</legend><div class="challenge-tables">${CHALLENGE_TABLES.map(n =>
-      `<label><input type="checkbox" data-challenge-table="${n}" ${tables.includes(n) ? 'checked' : ''}
-        ${tables.length === 1 && tables[0] === n ? 'disabled' : ''}> ${n}</label>`).join('')}</div></fieldset>` : ''}
-    <p class="hint">${challengeTables().length * 10} tal med nuvarande val. Avklarade världar uppdateras efter varje bossseger.</p>
+    <div id="challenge-table-controls">${challengeTableControls()}</div>
   </section>`;
 }
 
@@ -1950,15 +1958,21 @@ function showTableChallenge() {
 }
 
 document.addEventListener('change', event => {
-  if (event.target.id === 'challenge-mode') s.challengeSettings.mode = event.target.value;
-  else if (event.target.hasAttribute('data-challenge-table')) {
-    s.challengeSettings.tables = Array.from(document.querySelectorAll('[data-challenge-table]:checked'),
-      input => Number(input.dataset.challengeTable));
+  const input = event.target;
+  const controls = document.getElementById('challenge-table-controls');
+  if (input.id === 'challenge-mode') {
+    s.challengeSettings.mode = input.value;
+    input.blur();
+    controls.innerHTML = challengeTableControls();
+  } else if (input.hasAttribute('data-challenge-table')) {
+    const checkboxes = Array.from(controls.querySelectorAll('[data-challenge-table]'));
+    const checked = checkboxes.filter(checkbox => checkbox.checked);
+    s.challengeSettings.tables = checked.map(checkbox => Number(checkbox.dataset.challengeTable));
+    for (const checkbox of checkboxes) checkbox.disabled = checked.length === 1 && checkbox.checked;
+    document.getElementById('challenge-table-count').textContent =
+      `${challengeTables().length * 10} tal med nuvarande val. Avklarade världar uppdateras efter varje bossseger.`;
   } else return;
-  const focus = event.target.id ? '#challenge-mode' : `[data-challenge-table="${event.target.dataset.challengeTable}"]`;
   save();
-  render();
-  document.querySelector(focus)?.focus({ preventScroll: true });
 });
 
 document.addEventListener('keydown', event => {
@@ -2244,17 +2258,19 @@ function victoryReward(event) {
 
 function showVictoryEvent(event) {
   const reward = victoryReward(event);
-  const monster = MONSTERS.find(item => item.id === (event.monster ?? event.card));
+  const monster = MONSTERS.find(item => item.id === Number(event.monster ?? event.card));
+  const boss = WORLDS[event.bossWorld];
+  const cardLabel = monster && `${event.card ? 'Nytt monsterkort' : 'Kortet finns redan'} · ${rarity(monster.id)} · #${monster.id}`;
+  const cardImage = monster && `<img src="${monsterCardImage(monster)}" alt="" data-monster-card>`;
   document.getElementById('game-modal')?.remove();
   const dialog = document.createElement('div');
   dialog.className = 'game-modal-backdrop';
   dialog.id = 'game-modal';
   dialog.innerHTML = `<div class="modal victory-card" role="dialog" aria-modal="true" aria-labelledby="victory-title">
     <h2 id="victory-title">${escapeHtml(event.title)}</h2>
-    ${monster ? `<div class="card-reveal">
-      <img src="${monsterCardImage(monster)}" alt="">
-      <strong>${escapeHtml(monster.name)}</strong>
-      <span>${event.card ? 'Nytt monsterkort' : 'Kortet finns redan'} · ${rarity(monster.id)} · #${monster.id}</span>
+    ${boss ? `<div class="card-reveal"><img src="${BATTLE_ARENAS[boss.n].boss}" alt="${escapeHtml(boss.boss)}"></div>` : ''}
+    ${monster ? `<div class="${boss ? 'boss-card-reward' : 'card-reveal'}">
+      ${cardImage}<div><strong>${escapeHtml(monster.name)}</strong><br><span>${cardLabel}</span></div>
     </div>` : ''}
     <div class="victory-rewards" aria-label="Belöningar">
       <div class="victory-chip" data-victory-reward="gold"><span aria-hidden="true">🪙</span><strong>+${reward.gold}</strong><span>Guld</span></div>
@@ -2265,6 +2281,9 @@ function showVictoryEvent(event) {
     <button class="btn" type="button">Fortsätt</button>
   </div>`;
   document.body.appendChild(dialog);
+  dialog.querySelector('[data-monster-card]')?.addEventListener('error', event => {
+    event.currentTarget.src = 'assets/card-' + String(monster.id).padStart(2, '0') + '.svg';
+  }, { once: true });
   dialog.querySelector('button').addEventListener('click', () => collectVictory(dialog, event, reward), { once: true });
 }
 
@@ -2593,12 +2612,12 @@ function winBattle() {
   const battle = s.battle;
   if (!battle) return;
   const before = { gold: s.gold, xp: s.xp, level: s.level };
-  const newCard = !s.cards.includes(battle.card);
   const world = s.world;
-  const monster = MONSTERS.find(item => item.id === battle.card);
+  const monster = MONSTERS.find(item => item.id === Number(battle.card));
+  const newCard = monster && !s.cards.includes(monster.id);
   let collectionBonus = false;
   if (newCard) {
-    s.cards.push(battle.card);
+    s.cards.push(monster.id);
     s.collectionRewards ??= [];
     if (monster && !s.collectionRewards.includes(monster.world) &&
         MONSTERS.filter(item => item.world === monster.world).every(item => s.cards.includes(item.id))) {
@@ -2619,7 +2638,7 @@ function winBattle() {
   s.event = {
     type: 'victory',
     title: battle.boss ? '🏆 ' + WORLDS[world].boss + ' besegrad!' : '⚔️ Monster besegrat!',
-    card: newCard ? battle.card : null, monster: battle.card, collectionBonus,
+    card: newCard ? monster.id : null, monster: monster?.id, bossWorld: battle.boss ? world : undefined, collectionBonus,
     reward: { gold: earned.gold + (collectionBonus ? 75 : 0), xp: earned.xp + (collectionBonus ? 50 : 0), before },
     body: battle.boss ? (world < WORLDS.length - 1 ? 'Nästa värld upplåst!' : 'Du räddade riket!') : ''
   };
