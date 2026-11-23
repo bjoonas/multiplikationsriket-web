@@ -1280,7 +1280,7 @@ const TRAINING_ART = {
   trainingblade: { file:'svard', x:62, y:48, width:79, height:152 },
   trainingvest: { file:'vast', x:151, y:121, width:98, height:132 },
   traininghelm: { file:'hjalm', x:132, y:22, width:108, height:103 },
-  trainingshield: { file:'skold', x:229, y:184, width:80, height:96 }
+  trainingshield: { file:'skold', x:254, y:185, width:80, height:96 }
 };
 
 function gearImage(file) {
@@ -1290,7 +1290,9 @@ function gearImage(file) {
 function trainingLayer(item) {
   const art = TRAINING_ART[item.id];
   return `<g data-worn-slot="${item.slot}" data-worn-item="${item.id}">
-    <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"/>
+    <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : ''}/>
+    ${item.slot === 'armor' ? `<image href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#training-sleeve)"/>` : ''}
+    ${item.slot === 'shield' ? `<image href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#training-shield-grip)"/>` : ''}
   </g>`;
 }
 
@@ -1317,6 +1319,12 @@ function paintedGearOverlay(equipment, armor) {
   const emblem = item => forest(item) ? '#e9c783' : item.look === 'royal' ? '#fff2bb' : '#e3ecdf';
   return `<svg class="painted-gear" viewBox="0 0 384 384" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
     <defs>
+      <mask id="training-vest-opening" maskUnits="userSpaceOnUse" x="145" y="115" width="115" height="145">
+        <rect x="145" y="115" width="115" height="145" fill="white"/>
+        <path d="M167 141Q175 139 180 149Q185 161 177 169Q173 169 169 161Q163 153 167 141Z"/>
+      </mask>
+      <clipPath id="training-sleeve"><path d="M139 156Q149 143 165 139Q171 146 171 157Q169 174 158 184L139 185Z"/></clipPath>
+      <clipPath id="training-shield-grip"><path d="M251 225Q256 219 265 224L272 229Q275 235 268 241L258 242 252 236Z"/></clipPath>
       <clipPath id="borgvapnaren-grip"><path d="M109 159Q108 151 115 150L127 149Q135 150 137 157L137 174 131 181 116 180Q109 172 109 159Z"/></clipPath>
       <radialGradient id="gear-leather" cx=".31" cy=".26" r=".8">
         <stop stop-color="#b7a56b"/><stop offset=".5" stop-color="#67653c"/><stop offset="1" stop-color="#302c1c"/>
