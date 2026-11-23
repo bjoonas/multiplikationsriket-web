@@ -1288,39 +1288,88 @@ function paintedGearOverlay(equipment) {
   const armor = part('armor'), helmet = part('helmet'), weapon = part('weapon'), shield = part('shield');
   if (!armor && !helmet && !weapon && !shield) return '';
   const forest = item => item.look === 'forest';
-  const main = item => forest(item) ? '#62783b' : item.look === 'royal' ? '#c99542' : '#7c9bae';
-  const trim = item => forest(item) ? '#e6c077' : item.look === 'royal' ? '#ffe39c' : '#cbe0df';
+  const material = item => forest(item) ? 'leather' : item.look === 'royal' ? 'brass' : 'steel';
+  const finish = item => 'url(#gear-' + material(item) + ')';
+  const emblem = item => forest(item) ? '#e9c783' : item.look === 'royal' ? '#fff2bb' : '#e3ecdf';
   return `<svg class="painted-gear" viewBox="0 0 384 384" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
     <defs>
-      <linearGradient id="painted-gear-shade" x2=".8" y2="1">
-        <stop stop-color="#fff1b3" stop-opacity=".39"/>
-        <stop offset=".52" stop-color="#fff" stop-opacity="0"/>
-        <stop offset="1" stop-color="#211607" stop-opacity=".48"/>
+      <radialGradient id="gear-leather" cx=".31" cy=".26" r=".8">
+        <stop stop-color="#b7a56b"/><stop offset=".5" stop-color="#67653c"/><stop offset="1" stop-color="#302c1c"/>
+      </radialGradient>
+      <linearGradient id="gear-brass" x2=".88" y2="1">
+        <stop stop-color="#ffefb1"/><stop offset=".22" stop-color="#e0b76a"/><stop offset=".52" stop-color="#97602f"/>
+        <stop offset=".64" stop-color="#bf8b49"/><stop offset=".83" stop-color="#74451f"/><stop offset="1" stop-color="#be8d4d"/>
       </linearGradient>
+      <linearGradient id="gear-steel" x2=".76" y2="1">
+        <stop stop-color="#f5efe0"/><stop offset=".2" stop-color="#b7c3c4"/><stop offset=".46" stop-color="#697681"/>
+        <stop offset=".63" stop-color="#a5b4b8"/><stop offset="1" stop-color="#3d4856"/>
+      </linearGradient>
+      <linearGradient id="gear-cape" x2=".74" y2=".88">
+        <stop stop-color="#acb879"/><stop offset=".24" stop-color="#647044"/><stop offset=".54" stop-color="#394631"/>
+        <stop offset=".7" stop-color="#718651"/><stop offset="1" stop-color="#26352e"/>
+      </linearGradient>
+      <linearGradient id="gear-plume" x2=".4" y2="1">
+        <stop stop-color="#9eafd3"/><stop offset=".23" stop-color="#5375a9"/><stop offset=".62" stop-color="#2b4c7b"/><stop offset="1" stop-color="#26334e"/>
+      </linearGradient>
+      <radialGradient id="gear-wood" cx=".26" cy=".23" r=".87">
+        <stop stop-color="#dcac68"/><stop offset=".5" stop-color="#976532"/><stop offset="1" stop-color="#4b301e"/>
+      </radialGradient>
+      <linearGradient id="gear-edge" x2=".64" y2="1">
+        <stop stop-color="#fff3bc"/><stop offset=".37" stop-color="#ceaa6e"/><stop offset=".76" stop-color="#674529"/><stop offset="1" stop-color="#c49254"/>
+      </linearGradient>
+      <filter id="gear-grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency=".49" numOctaves="2" seed="11"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComposite in2="SourceGraphic" operator="in"/>
+        <feComponentTransfer><feFuncA type="linear" slope=".13"/></feComponentTransfer>
+        <feBlend in2="SourceGraphic" mode="multiply"/>
+      </filter>
+      <filter id="gear-shadow" x="-15%" y="-15%" width="130%" height="135%">
+        <feDropShadow dx="1.5" dy="2.6" stdDeviation="2" flood-color="#221a18" flood-opacity=".7"/>
+      </filter>
     </defs>
-    ${armor ? `<g data-worn-slot="armor" data-worn-item="${armor.id}" stroke="#462e20" stroke-width="3" stroke-linejoin="round">
-      ${forest(armor) ? '<path d="M159 121Q141 130 141 154Q131 191 104 229Q89 253 92 274L108 282Q109 301 144 309L151 286Q143 261 146 247Q130 251 133 230L143 207 151 174 166 143Z" fill="#385a39" stroke="#29462e"/><path d="M143 166Q133 212 103 268M136 251Q128 275 139 301" fill="none" stroke="#75915a" stroke-width="2"/>' : ''}
-      <path id="painted-armor" d="M175 137 192 145 217 143 233 152 243 173 234 188 239 213 226 232 200 233 178 224 166 204 169 182 156 176Z" fill="${main(armor)}"/>
-      <use href="#painted-armor" fill="url(#painted-gear-shade)"/>
-      <path d="M168 202Q201 218 236 199M176 219Q204 232 229 216" fill="none" stroke="${trim(armor)}"/>
-      <path d="${forest(armor) ? 'M199 186q-11-11 8-26 5 20-8 26Z' : 'M203 153 208 165 221 166 210 173 213 187 203 179 192 187 195 173 185 166 198 165Z'}" fill="${trim(armor)}" stroke-width="1.6"/>
+    ${armor ? `<g data-worn-slot="armor" data-worn-item="${armor.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
+      ${forest(armor) ? `<path d="M159 121Q141 130 141 154Q131 191 104 229Q89 253 92 274L108 282Q109 301 144 309L151 286Q143 261 146 247Q130 251 133 230L143 207 151 174 166 143Z" fill="url(#gear-cape)" stroke="#2f3b2b" stroke-width="2" filter="url(#gear-grain)"/>
+        <path d="M148 158Q134 216 101 270M139 249Q129 278 139 301" fill="none" stroke="#afba7d" stroke-width="2.5" opacity=".5"/>
+        <path d="M137 182Q126 219 109 242M119 274Q117 290 135 302" fill="none" stroke="#304430" stroke-width="5" opacity=".55"/>` : ''}
+      <path d="M175 137Q193 149 217 143L232 151Q240 160 243 173L234 188 239 213 226 232Q200 240 178 224L166 204 169 182 156 176Z" fill="${finish(armor)}" stroke="#493426" stroke-width="2.5" filter="url(#gear-grain)"/>
+      <path d="M176 142Q199 156 222 148M164 173q9-8 19-12M170 204Q200 220 235 200M177 219Q202 233 229 216" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
+      ${forest(armor) ? `<path d="M174 158 178 174 174 198M231 169l-4 26M181 216q19 13 35 9" fill="none" stroke="#e6bf7b" stroke-width="1.6" stroke-dasharray="2 3"/>
+        <path d="M198 188q-14-14 9-30 9 19-9 30Z" fill="url(#gear-edge)" stroke="#514a2a" stroke-width="1.5"/>
+        <path d="M197 189l8-21" stroke="#5e542d" stroke-width="1.5"/>` :
+        `<path d="M174 186Q205 200 235 179M173 192Q205 206 234 186" fill="none" stroke="#f9df9f" opacity=".36" stroke-width="2"/>
+        <path d="M204 154l5 10 12 2-9 7 2 12-10-6-10 6 2-12-9-7 12-2Z" fill="url(#gear-edge)" stroke="#785327" stroke-width="1.5"/>`}
+      <g fill="${emblem(armor)}"><circle cx="170" cy="173" r="2.4"/><circle cx="233" cy="173" r="2.4"/><circle cx="179" cy="214" r="2"/><circle cx="225" cy="216" r="2"/></g>
     </g>` : ''}
-    ${helmet ? `<g data-worn-slot="helmet" data-worn-item="${helmet.id}" stroke="#493521" stroke-width="3" stroke-linejoin="round">
-      <path id="painted-helmet" d="${forest(helmet) ? 'M147 71Q149 36 189 26L225 32 244 53 218 52 195 57 182 76 178 101 157 94Z' : 'M147 73Q149 40 178 31L202 26 231 36 249 59 235 72 221 57 191 64 183 89 165 101 153 92Z'}" fill="${main(helmet)}"/>
-      <use href="#painted-helmet" fill="url(#painted-gear-shade)"/>
-      <path d="M157 74Q180 50 222 47L241 57" fill="none" stroke="${trim(helmet)}"/>
-      ${forest(helmet) ? '<path d="M165 59q-8-30 17-37 5 24-17 37Z" fill="#9fba5d"/>' :
-        '<path d="M180 37Q184 10 225 11Q213 18 213 32Z" fill="#284879"/>'}
+    ${helmet ? `<g data-worn-slot="helmet" data-worn-item="${helmet.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
+      ${forest(helmet) ? '' : '<path d="M176 40Q177 10 221 9L228 13Q216 19 212 34Z" fill="url(#gear-plume)" stroke="#333755" stroke-width="2"/><path d="M185 33Q194 18 215 15" fill="none" stroke="#a4b7d4" stroke-width="1.5"/>'}
+      <path d="${forest(helmet) ? 'M147 71Q149 36 189 26L225 32 244 53 218 52 195 57 182 76 178 101 157 94Z' : 'M147 73Q149 40 178 31L202 26 231 36 249 59 235 72 221 57 191 64 183 89 165 101 153 92Z'}" fill="${finish(helmet)}" stroke="#504031" stroke-width="2.5" filter="url(#gear-grain)"/>
+      <path d="M154 76Q174 48 216 46L240 57M158 84q7-21 23-25" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
+      ${forest(helmet) ? `<path d="M157 61Q150 35 178 24Q188 46 157 61Z" fill="url(#gear-cape)" stroke="#3c472d" stroke-width="1.8"/>
+        <path d="M155 64l17-30m-12 21 12-6m-9-1-4-7" fill="none" stroke="#c0c48a" stroke-width="1.6"/>
+        <path d="M152 83q7-15 20-23" fill="none" stroke="#f0ce83" stroke-width="1.5" stroke-dasharray="2 3"/>` :
+        `<path d="M157 65Q162 46 184 40M181 39q17-8 38 1" fill="none" stroke="#fff2c0" stroke-width="2.5" opacity=".72"/>
+        <path d="M161 81l1 6m4-8 1 5" stroke="#684c33" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="170" cy="74" r="3.7" fill="url(#gear-edge)" stroke="#654931" stroke-width="1.4"/>`}
     </g>` : ''}
-    ${weapon ? `<g data-worn-slot="weapon" data-worn-item="${weapon.id}" stroke="#56371e" stroke-width="3" stroke-linejoin="round">
-      <path d="M137 232 169 251M153 256 170 237" stroke="${trim(weapon)}" stroke-width="7" stroke-linecap="round"/>
-      <path d="M159 252 169 241Q${forest(weapon) ? '206 259 216 289' : '211 257 232 302'}Q187 292 159 252Z" fill="${trim(weapon)}"/>
-      <path d="M168 249 204 280" stroke="${main(weapon)}" stroke-width="3"/>
+    ${weapon ? `<g data-worn-slot="weapon" data-worn-item="${weapon.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
+      <path d="M159 252 169 241Q${forest(weapon) ? '206 259 216 289' : '211 257 232 302'}Q187 292 159 252Z" fill="url(#gear-steel)" stroke="#423b32" stroke-width="2"/>
+      <path d="M163 249Q189 266 ${forest(weapon) ? '214 287' : '228 298'}" fill="none" stroke="#fff0c6" stroke-width="2"/>
+      <path d="M173 248q18 13 29 27" fill="none" stroke="#465060" stroke-width="2.5" opacity=".7"/>
+      <path d="M139 232 163 248" stroke="#57402e" stroke-width="7" stroke-linecap="round"/>
+      <path d="M142 234l-1 4m5-1-1 4m5-1-1 4" stroke="#c6a876" stroke-width="2"/>
+      <path d="M152 255Q161 245 169 237" stroke="url(#gear-edge)" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <circle cx="162" cy="246" r="3" fill="${forest(weapon) ? '#a6af64' : '#c47437'}" stroke="#f0cc86" stroke-width="1.6"/>
     </g>` : ''}
-    ${shield ? `<g data-worn-slot="shield" data-worn-item="${shield.id}" stroke="#4f351f" stroke-width="4" stroke-linejoin="round">
-      <path id="painted-shield" d="${forest(shield) ? 'M277 199c24 0 43 17 43 41s-19 42-43 42-43-18-43-42 19-41 43-41Z' : 'M241 205 277 194 311 205 307 245Q301 272 277 293 253 274 244 246Z'}" fill="${main(shield)}"/>
-      <use href="#painted-shield" fill="url(#painted-gear-shade)" stroke="${trim(shield)}" stroke-width="4"/>
-      <path d="${forest(shield) ? 'M260 258Q250 218 299 217 299 251 260 258ZM260 258 286 231' : 'M277 209 284 226 304 227 289 240 293 260 277 249 261 260 265 240 250 227 270 226Z'}" fill="${trim(shield)}" stroke-width="2"/>
+    ${shield ? `<g data-worn-slot="shield" data-worn-item="${shield.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
+      <path d="${forest(shield) ? 'M277 199c24 0 43 17 43 41s-19 42-43 42-43-18-43-42 19-41 43-41Z' : 'M241 205 277 194 311 205 307 245Q301 272 277 293 253 274 244 246Z'}" fill="${forest(shield) ? 'url(#gear-wood)' : finish(shield)}" stroke="#4a3223" stroke-width="5" filter="url(#gear-grain)"/>
+      <path d="${forest(shield) ? 'M277 203c22 0 39 16 39 37s-17 38-39 38-39-17-39-38 17-37 39-37Z' : 'M246 209 277 199 306 208 302 243Q296 267 277 286 258 268 249 244Z'}" fill="none" stroke="url(#gear-edge)" stroke-width="3.7"/>
+      ${forest(shield) ? `<path d="M259 208q-7 20 0 59m12-58q-5 24 0 63m16-64q5 31-2 62m13-54q5 25-2 45" fill="none" stroke="#533722" opacity=".57" stroke-width="2"/>
+        <path d="M260 258Q250 218 299 217 299 251 260 258ZM260 258 286 231" fill="url(#gear-edge)" stroke="#544226" stroke-width="2.6"/>` :
+        `<path d="M250 213 277 205 300 213 297 243Q292 262 277 275 262 261 255 241Z" fill="url(#gear-plume)" stroke="#5c4c39" stroke-width="1.6"/>
+        <path d="M277 209 284 226 304 227 289 240 293 260 277 249 261 260 265 240 250 227 270 226Z" fill="url(#gear-edge)" stroke="#65472b" stroke-width="2.2"/>
+        <path d="M277 217l4 12 14 1-12 7 3 13-9-7" fill="none" stroke="#fff0b2" stroke-width="1.6"/>`}
+      <g fill="url(#gear-edge)" stroke="#66472c"><circle cx="277" cy="204" r="2.6"/><circle cx="248" cy="226" r="2.6"/><circle cx="306" cy="226" r="2.6"/><circle cx="277" cy="271" r="2.6"/></g>
     </g>` : ''}
   </svg>`;
 }
