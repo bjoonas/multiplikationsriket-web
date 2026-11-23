@@ -333,11 +333,45 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .atlas-play-world{font-size:12px;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:650px){.atlas-play-float{right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));padding:12px 15px}.atlas-panel{padding-bottom:80px}}
 
-/* Illustrated route backgrounds share the existing walking animation. */
-.illustrated-travel .scene-bg { background-size: cover; background-position: 50% 68%; filter: none; animation: none }
-.illustrated-travel .scene-fog { background: linear-gradient(0deg, #10261b5e, transparent 38%) }
-.illustrated-travel[data-travel-step="4"] .hero { bottom: 35%; height: 60% }
-.illustrated-travel[data-travel-step="4"] .hero-spot { display: none }
+/* Keep the walking track aligned with the bottom of the painted scenery. */
+.illustrated-travel { container-type: inline-size }
+.illustrated-travel .scene-bg { background-size: cover; background-position: center bottom; filter: none }
+.scene.illustrated-travel .scene-bg { animation: none }
+.scene.illustrated-travel .scene-fog { background: linear-gradient(0deg, #10261b5e, transparent 30%); animation: none }
+.illustrated-travel .hero-spot { display: none }
+.scene.illustrated-travel .hero {
+  width: 30%;
+  height: 67%;
+  bottom: var(--route-ground);
+  animation: none !important;
+}
+.illustrated-travel .hero img { object-position: center bottom }
+.hero-gear { display: inline-flex; gap: 3px; margin-inline-start: 4px }
+.illustrated-travel > .hero-gear {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  padding: 3px 5px;
+  border-radius: 6px;
+  background: #172920ef;
+}
+.scene.illustrated-travel.travel-moving .hero { animation: route-walk .65s ease-out both !important }
+.scene.illustrated-travel.travel-moving .hero-visual { animation: bob .22s ease-in-out 3 }
+.illustrated-travel .travel-progress { bottom: 1.5% }
+.illustrated-travel .travel-marker { bottom: var(--route-ground) }
+.illustrated-travel .correct-celebration { position: absolute; align-items: start; padding-top: 6px }
+.illustrated-travel .correct-celebration .correct-burst { min-width: 0; padding: 3px 9px; border-radius: 9px }
+.illustrated-travel .correct-burst strong { font-size: 13px }
+.illustrated-travel .correct-burst span, .illustrated-travel .correct-burst em { display: inline; font-size: 11px }
+.illustrated-travel .correct-burst em { margin-inline-start: 4px }
+.illustrated-travel .correct-celebration i { display: none }
+@keyframes route-walk {
+  from { left: var(--route-from) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene.illustrated-travel.travel-moving .hero,
+  .scene.illustrated-travel.travel-moving .hero-visual { animation: none !important }
+}
 
 /* Illustrated arena, enabled per world and only during combat. */
 .game-panel .scene.layered-arena {
@@ -642,7 +676,10 @@ function gearOverlay(){let e=s.equipment;let weapon=e.weapon,helmet=e.helmet,arm
 const BATTLE_ARENAS = {
   2: {
     layers: { background: 'assets/backgrounds/riddarskolan-arena.webp' },
-    heroes: {},
+    heroes: {
+      adventurer: 'assets/characters/riddarskolan-aventyrare.webp',
+      knight: 'assets/characters/riddarskolan-riddare.webp'
+    },
     enemies: {},
     boss: 'assets/monster-6.svg',
     placeholderEnemy: card => 'assets/monster-' + (card - 1) + '.svg'
@@ -653,10 +690,16 @@ function activeArena() {
   return s.battle ? BATTLE_ARENAS[WORLDS[s.world].n] : undefined;
 }
 
-function heroVisual(arena) {
+function heroVisual(painted) {
   const hero = s.equipment.armor || s.level >= 5 ? 'knight' : 'adventurer';
-  const image = arena?.heroes[hero] || 'assets/' + hero + '.svg';
-  return '<div class="hero-visual"><img src="' + image + '" alt="Din riddare">' + gearOverlay() + '</div>';
+  const image = painted || 'assets/' + hero + '.svg';
+  return '<div class="hero-visual"><img src="' + image + '" alt="Din riddare">' + (painted ? '' : gearOverlay()) + '</div>';
+}
+
+function sceneGear() {
+  const items = Object.values(s.equipment).map(id => ITEMS.find(item => item.id === id)).filter(Boolean);
+  if (!items.length) return '';
+  return `<span class="hero-gear" aria-label="${escapeHtml(equipmentSummary())}" title="${escapeHtml(equipmentSummary())}">${items.map(item => item.art).join('')}</span>`;
 }
 
 function monsterImage(b, arena) {
@@ -668,9 +711,9 @@ function monsterImage(b, arena) {
 
 const TRAVEL_BACKGROUNDS = {
   2: [
-    { start: 8, image: 'assets/backgrounds/riddarskolan-borgport.webp' },
-    { start: 4, image: 'assets/backgrounds/riddarskolan-stenbro.webp' },
-    { start: 0, image: 'assets/backgrounds/riddarskolan-skolvag.webp' }
+    { start: 8, ground: 5, image: 'assets/backgrounds/riddarskolan-borgport.webp' },
+    { start: 4, ground: 5, image: 'assets/backgrounds/riddarskolan-stenbro.webp' },
+    { start: 0, ground: 11, image: 'assets/backgrounds/riddarskolan-skolvag.webp' }
   ]
 };
 
@@ -679,10 +722,15 @@ function scene() {
   const table = WORLDS[s.world].n;
   const route = !b && TRAVEL_BACKGROUNDS[table]?.find(stop => s.step >= stop.start);
   const worldBackground = route?.image || `assets/world-${table}.svg`;
+  const routeX = route ? 4 + (s.step - route.start) * 18 : 0;
+  const heroX = b ? 16 : route ? routeX : Math.min(53, 12 + s.step * 3.5);
+  const theme = arena || (route && BATTLE_ARENAS[table]);
+  const painted = theme?.heroes?.[s.equipment.armor || s.level >= 5 ? 'knight' : 'adventurer'];
+  const gear = painted ? sceneGear() : '';
   const palette = ['#efbf65','#b4e8de','#c9a17b','#8cc66e','#ff733b','#ff9a47','#a88be0','#9dc8ff'];
   const sceneArt = arena
     ? Object.entries(arena.layers).map(([layer, path]) => `--arena-${layer}:url('${path}')`).join(';')
-    : `--world-bg:url('${worldBackground}')`;
+    : `--world-bg:url('${worldBackground}')${route ? `;--route-from:${Math.max(4, routeX - 18)}%;--route-ground:max(${route.ground}%, ${route.ground / 3}cqw)` : ''}`;
   const layers = arena
     ? ['background', 'midground', 'ground', 'foreground'].map(layer =>
         `<div class="arena-layer arena-${layer}" aria-hidden="true"></div>`).join('')
@@ -692,16 +740,16 @@ function scene() {
   const travel = b ? '' : `${marker ? '<div class="travel-marker">' + marker + '</div>' : ''}
     <div class="travel-progress"><div style="width:${s.step/12*100}%"></div></div>`;
   const actors = `<div class="hero-spot"></div>
-    <div class="hero" id="hero" title="${escapeHtml(equipmentSummary())}" style="left:${b?'16%':Math.min(53,12+s.step*3.5)+'%'}">${heroVisual(arena)}</div>
+    <div class="hero" id="hero" title="${escapeHtml(equipmentSummary())}" style="left:${heroX}%">${heroVisual(painted)}</div>
     ${b ? `<div class="enemy" id="enemy"><img src="${monsterImage(b, arena)}" alt="${escapeHtml(b.name)}"></div>` : ''}`;
   const heads = b ? `<div class="battleheads">
-    <div>🛡️ Hjälten<div class="healthbar"><div style="width:${100*s.hp/maxHp()}%;background:#5caa77"></div></div></div>
+    <div>🛡️ Hjälten${gear}<div class="healthbar"><div style="width:${100*s.hp/maxHp()}%;background:#5caa77"></div></div></div>
     <div>${escapeHtml(b.name)}<div class="healthbar"><div style="width:${100*b.hp/b.maxHp}%"></div></div></div>
   </div>` : '';
   const stage = layers + bossEffects + travel + actors;
-  return `<div class="scene ${b?'battle-scene':''} ${b?.boss?'boss-scene':''} ${arena?'layered-arena':''} ${route?'illustrated-travel':''}" id="scene" style="${sceneArt}" ${route ? `data-travel-step="${route.start}"` : ''}>
+  return `<div class="scene ${b?'battle-scene':''} ${b?.boss?'boss-scene':''} ${arena?'layered-arena':''} ${route?'illustrated-travel':''}" id="scene" style="${sceneArt}">
     ${arena ? '<div class="arena-camera">' + stage + '</div>' : stage}
-    ${heads}<div id="effect"></div><div class="battle-fx" id="battle-fx" aria-hidden="true"></div>
+    ${heads}${route ? gear : ''}<div id="effect"></div><div class="battle-fx" id="battle-fx" aria-hidden="true"></div>
   </div>`;
 }
 function game(){let w=WORLDS[s.world];return `<div class="panel game-panel${activeArena()?' arena-panel':''}"><div class="top"><b>${w.emoji} ${w.name}</b><span class="steptrack">${s.phase==='battle'?'STRID':`STEG ${s.step}/12`}</span></div>${scene()}${s.phase==='battle'&&s.battle?.boss?'<div class="boss-phase">👑 BOSS · Fas '+(s.battle.phase||1)+'/2 · '+(s.battle.phase===2?'⚡ '+BOSS_SKILLS[s.world].name:'Vid halva hälsan väcks bossens kraft')+'</div>':''}${s.phase==='battle'?`<div class="actions">${[['slash','⚔️ Svärd '+dmg()],['power','💥 Kraft '+(dmg()+20)+' (2 tal)']].map(([a,l])=>`<button class="btn ${s.battle?.move===a?'':'secondary'} small" data-move="${a}" ${s.battle?.pending?'disabled':''}>${l}</button>`).join('')}</div>`:''}${s.event?'<p class="hint">🎁 En händelse väntar. Tryck på Fortsätt.</p>':s.phase==='battle'&&!s.battle?.move?'<p class="hint">Välj din attack för att få en matteuppgift.</p>':questionUIIfReady()}<div class="steptrack">${s.phase==='battle'?s.battle?.boss?'👑 Blockera bossens attacker med ett rätt svar inom 5 sekunder!':'Fienden anfaller ibland efter din tur.':'Lös tal för att röra dig framåt. Händelser väntar längs vägen.'}</div></div>`}
@@ -723,7 +771,7 @@ function wrongFeedback(){
  document.getElementById('wrong-reward')?.remove();
  const el=document.createElement('div');el.id='wrong-reward';el.className='correct-celebration';el.setAttribute('aria-live','polite');
  el.innerHTML='<div class="correct-burst wrong-burst"><strong>💡 FÖRSÖK IGEN!</strong><span>Du kan klara det!</span></div>';
- (document.querySelector('.layered-arena') || document.body).appendChild(el);setTimeout(()=>el.remove(),1300);
+ (document.querySelector('.layered-arena, .illustrated-travel') || document.body).appendChild(el);setTimeout(()=>el.remove(),1300);
 }
 function correctReward(kind,assisted,bonus=0){
  const labels=kind==='block'?['🛡️ PERFEKT BLOCKERING!','✨ Bossens attack stoppades!']:kind==='chest'?['🔓 KISTAN ÖPPNAD!','🪙 +30 guld · ⭐ +10 XP']:kind==='travel'?['✨ '+(assisted?'BRA KÄMPAT!':'SNYGGT!'),'👣 Ett steg närmare bossen · +3 XP']:kind==='power'?['💥 KRAFTATTACK!','⚔️ Fantastiskt räknat!']:['⚔️ '+(assisted?'BRA KÄMPAT!':'FULLTRÄFF!'),'⭐ Rätt gångertal!'];
@@ -731,7 +779,7 @@ function correctReward(kind,assisted,bonus=0){
  const el=document.createElement('div');el.id='correct-reward';el.className='correct-celebration';el.setAttribute('aria-live','polite');
  el.innerHTML='<div class="correct-burst"><strong>'+labels[0]+'</strong><span>'+labels[1]+'</span>'+(s.streak>=2?'<em class="streak-label">🔥 '+s.streak+' rätt i rad!</em>':'')+(bonus?'<em class="bonus-label">🎉 KOMBOBONUS! +10 🪙 +10 XP</em>':'')+'</div>';if(bonus){el.classList.add('bonus-celebration');coinFlight()}
  for(let i=0;i<14;i++){let p=document.createElement('i');p.textContent=['✨','⭐','💫','🟡'][i%4];p.style.setProperty('--dx',Math.round(Math.cos(i*Math.PI/7)*Math.min(innerWidth*.42,210))+'px');p.style.setProperty('--dy',Math.round(Math.sin(i*Math.PI/7)*170)+'px');p.style.setProperty('--rot',i*41+'deg');p.style.setProperty('--delay',i%3*35+'ms');el.appendChild(p)}
- (document.querySelector('.layered-arena') || document.body).appendChild(el);let scene=document.getElementById('scene');scene?.classList.add('reward-hop');setTimeout(()=>scene?.classList.remove('reward-hop'),700);setTimeout(()=>el.remove(),1300);
+ (document.querySelector('.layered-arena, .illustrated-travel') || document.body).appendChild(el);let scene=document.getElementById('scene');scene?.classList.add('reward-hop');setTimeout(()=>scene?.classList.remove('reward-hop'),700);setTimeout(()=>el.remove(),1300);
  actionSound(bonus?'combo':kind==='chest'?'chest':kind==='travel'?'step':'reward');
 }
 function coinFlight(){const hud=document.getElementById('hud');if(!hud)return;const end=hud.getBoundingClientRect();for(let i=0;i<8;i++){let coin=document.createElement('span');coin.className='flying-coin';coin.textContent='🪙';coin.style.setProperty('--coin-x',Math.round(end.left+end.width/2-innerWidth/2+(i-3)*7)+'px');coin.style.setProperty('--coin-y',Math.round(end.top+end.height/2-innerHeight*.54)+'px');coin.style.animationDelay=i*65+'ms';document.body.appendChild(coin);setTimeout(()=>coin.remove(),1250)}}
