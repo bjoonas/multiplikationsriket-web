@@ -1288,14 +1288,30 @@ function comboMeter() {
 function questionUI(){if(!s.question)chooseQuestion();let q=s.question;return `<div class="controls"><div class="question"><div class="steptrack">${s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)} ${s.hint?`<span class="hint">Räkna: ${Array.from({length:q.b},()=>q.a).join(' + ')} = ?</span>`:''}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
 function rarity(id){return id%25===0?'Legendarisk':id%10===0?'Episk':id%4===0?'Sällsynt':'Vanlig'}
 function equipmentSummary(){return ['weapon','helmet','armor','shield'].map(slot=>ITEMS.find(i=>i.id===s.equipment[slot])).filter(Boolean).map(i=>i.art+' '+i.name).join(' · ')||'Äventyrarens startutrustning'}
-// Paths in an arena theme refer to artwork shipped with the app.
+const PAINTED_WORLDS = {
+  2: 'riddarskolan',
+  4: 'bergsfastningen',
+  5: 'trollskogen',
+  6: 'eldbergen',
+  7: 'drakens-dal',
+  8: 'skuggornas-borg',
+  9: 'trollkarlens-torn'
+};
+
+function paintedArena(table, world) {
+  const enemies = Object.fromEntries(MONSTERS.filter(monster => WORLDS[monster.world].n === table)
+    .map(monster => [monster.id, `assets/monsters/${world}-${monster.id}.webp`]));
+  return {
+    layers: { background: `assets/backgrounds/${world}-arena.webp` },
+    enemies,
+    boss: `assets/monsters/${world}-boss.webp`,
+    facesLeft: true
+  };
+}
+
 const BATTLE_ARENAS = {
-  2: {
-    layers: { background: 'assets/backgrounds/riddarskolan-arena.webp' },
-    enemies: {},
-    boss: 'assets/monster-6.svg',
-    placeholderEnemy: card => 'assets/monster-' + (card - 1) + '.svg'
-  },
+  ...Object.fromEntries(Object.entries(PAINTED_WORLDS)
+    .map(([table, world]) => [table, paintedArena(Number(table), world)])),
   3: {
     layers: { background: 'assets/backgrounds/skelettborgen-arena.webp' },
     enemies: {
@@ -1473,7 +1489,24 @@ function monsterImage(b, arena) {
     || 'assets/card-' + String(card).padStart(2, '0') + '.svg';
 }
 
+function paintedTravel(world, groundHeights) {
+  return [8, 4, 0].map((start, index) => {
+    const stage = 2 - index;
+    return {
+      start,
+      image: `assets/backgrounds/${world}-fard-${stage + 1}.webp`,
+      ground: groundHeights[stage]
+    };
+  });
+}
+
 const TRAVEL_BACKGROUNDS = {
+  4: paintedTravel(PAINTED_WORLDS[4], [20, 20, 20]),
+  5: paintedTravel(PAINTED_WORLDS[5], [20, 20, 20]),
+  6: paintedTravel(PAINTED_WORLDS[6], [29, 21, 22]),
+  7: paintedTravel(PAINTED_WORLDS[7], [16, 19, 23]),
+  8: paintedTravel(PAINTED_WORLDS[8], [23, 22, 20]),
+  9: paintedTravel(PAINTED_WORLDS[9], [17, 22, 24]),
   2: [
     { start: 8, image: 'assets/backgrounds/riddarskolan-borgport.webp' },
     { start: 4, image: 'assets/backgrounds/riddarskolan-stenbro.webp' },
