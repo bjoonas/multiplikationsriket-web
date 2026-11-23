@@ -826,20 +826,26 @@ const ITEMS = [
   { id:'trainingshield', name:'Rund träsköld', art:'🛡️', slot:'shield', world:0, price:35, block:5, look:'training', forge:true },
   { id:'iron', name:'Järnsvärd', art:'🗡️', slot:'weapon', world:1, price:95, damage:5 },
   { id:'steel', name:'Stålsvärd', art:'⚔️', slot:'weapon', world:2, price:145, damage:10, forge:true },
-  { id:'silver', name:'Silversvärd', art:'🗡️', slot:'weapon', world:3, price:200, damage:15 },
-  { id:'fire', name:'Eldsvärd', art:'🔥', slot:'weapon', world:4, price:265, damage:20 },
-  { id:'dragonblade', name:'Draksvärd', art:'🐉', slot:'weapon', world:5, price:335, damage:25 },
+  { id:'silver', name:'Skogssabel', art:'🗡️', slot:'weapon', world:3, price:200, damage:15, forge:true },
+  { id:'fire', name:'Eldstålssvärd', art:'🔥', slot:'weapon', world:4, price:265, damage:20, forge:true },
+  { id:'dragonblade', name:'Draksvärd', art:'🐉', slot:'weapon', world:5, price:335, damage:25, forge:true },
   { id:'dawnblade', name:'Gryningssvärd', art:'🌅', slot:'weapon', world:6, price:415, damage:30 },
   { id:'runeblade', name:'Runsvärd', art:'⚔️', slot:'weapon', world:7, price:505, damage:35 },
   { id:'leather', name:'Förstärkt läderväst', art:'🧥', slot:'armor', world:1, price:70, hp:18, forge:true },
   { id:'armor', name:'Läderrustning', art:'🥋', slot:'armor', world:2, price:110, hp:32, forge:true },
-  { id:'plate', name:'Plåtrustning', art:'🛡️', slot:'armor', world:3, price:155, hp:49 },
-  { id:'emberarmor', name:'Glödrustning', art:'🔥', slot:'armor', world:4, price:210, hp:67 },
-  { id:'dragonarmor', name:'Drakfjällsrustning', art:'🐉', slot:'armor', world:5, price:270, hp:85 },
+  { id:'plate', name:'Skogsväktarens rustning', art:'🛡️', slot:'armor', world:3, price:155, hp:49, forge:true },
+  { id:'emberarmor', name:'Glödriddarens rustning', art:'🔥', slot:'armor', world:4, price:210, hp:67, forge:true },
+  { id:'dragonarmor', name:'Drakfjällsrustning', art:'🐉', slot:'armor', world:5, price:270, hp:85, forge:true },
   { id:'dawnarmor', name:'Gryningsrustning', art:'🌅', slot:'armor', world:6, price:335, hp:106 },
   { id:'runearmor', name:'Runrustning', art:'✨', slot:'armor', world:7, price:410, hp:130 },
   { id:'leatherhelm', name:'Öppen stålhjälm', art:'🪖', slot:'helmet', world:2, price:65, hp:14, forge:true },
   { id:'leathershield', name:'Stålbeslagen sköld', art:'🛡️', slot:'shield', world:2, price:70, block:7, forge:true },
+  { id:'skoghelm', name:'Lövhjälm', art:'🍂', slot:'helmet', world:3, price:90, hp:18, forge:true },
+  { id:'skogshield', name:'Eklövssköld', art:'🛡️', slot:'shield', world:3, price:95, block:8, forge:true },
+  { id:'glodhelm', name:'Glödhjälm', art:'🔥', slot:'helmet', world:4, price:125, hp:20, forge:true },
+  { id:'glodshield', name:'Glödsköld', art:'🛡️', slot:'shield', world:4, price:135, block:9, forge:true },
+  { id:'drakhelm', name:'Drakfjällshjälm', art:'🐉', slot:'helmet', world:5, price:150, hp:22, forge:true },
+  { id:'drakshield', name:'Draksköld', art:'🛡️', slot:'shield', world:5, price:160, block:10, forge:true },
   { id:'crown', name:'Riddarhjälm', art:'👑', slot:'helmet', world:3, price:105, hp:20 },
   { id:'shield', name:'Runsköld', art:'🛡️', slot:'shield', world:3, price:115, block:10 }
 ];
@@ -850,7 +856,10 @@ const GEAR_SLOTS = [
 ];
 const OUTFITS = {
   training: { name: 'Läder', gear: { armor:'trainingvest', weapon:'trainingblade', helmet:'traininghelm', shield:'trainingshield' } },
-  steel: { name: 'Läderrustning', gear: { armor:'armor', weapon:'steel', helmet:'leatherhelm', shield:'leathershield' } }
+  steel: { name: 'Läderrustning', gear: { armor:'armor', weapon:'steel', helmet:'leatherhelm', shield:'leathershield' } },
+  skog: { name: 'Skogsväktaren', gear: { armor:'plate', weapon:'silver', helmet:'skoghelm', shield:'skogshield' } },
+  glod: { name: 'Glödriddaren', gear: { armor:'emberarmor', weapon:'fire', helmet:'glodhelm', shield:'glodshield' } },
+  drak: { name: 'Drakfjäll', gear: { armor:'dragonarmor', weapon:'dragonblade', helmet:'drakhelm', shield:'drakshield' } }
 };
 let fittingGear = null;
 let selectedGearSlot = 'armor';
@@ -1299,6 +1308,18 @@ const FITTED_ART = {
   steel: { file:'stal-svard', x:45, y:43, width:101, height:148, transform:'rotate(8 123 165)' },
   leatherhelm: { file:'stal-hjalm', x:132, y:8, width:108, height:103 },
   leathershield: { file:'stal-skold', x:226, y:179, width:80, height:96 },
+  plate: { file:'skog-vast', cape:'skog-mantel', ...VEST_FIT },
+  emberarmor: { file:'glod-vast', cape:'glod-mantel', ...VEST_FIT },
+  dragonarmor: { file:'drak-vast', cape:'drak-mantel', ...VEST_FIT },
+  skoghelm: { file:'skog-hjalm', x:128, y:21, width:112, height:92, openFace:true },
+  glodhelm: { file:'glod-hjalm', x:128, y:20, width:112, height:94, openFace:true },
+  drakhelm: { file:'drak-hjalm', x:125, y:13, width:117, height:101, openFace:true },
+  skogshield: { file:'skog-skold', x:226, y:179, width:80, height:96 },
+  glodshield: { file:'glod-skold', x:223, y:174, width:86, height:113 },
+  drakshield: { file:'drak-skold', x:223, y:171, width:86, height:121 },
+  silver: { file:'skog-svard', x:53, y:45, width:90, height:146, transform:'rotate(8 123 165)' },
+  fire: { file:'glod-svard', x:49, y:29, width:98, height:163, transform:'rotate(8 123 165)' },
+  dragonblade: { file:'drak-svard', x:49, y:21, width:98, height:171, transform:'rotate(8 123 165)' },
   traininghelm: { file:'hjalm', x:132, y:22, width:108, height:103 },
   trainingshield: { file:'skold', x:226, y:179, width:80, height:96 }
 };
@@ -1310,7 +1331,7 @@ function gearImage(file) {
 function fittedGearLayer(item) {
   const art = FITTED_ART[item.id];
   return `<g data-worn-slot="${item.slot}" data-worn-item="${item.id}">
-    <g${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : ''}>
+    <g${item.slot === 'armor' ? ' mask="url(#training-vest-opening)"' : art.openFace ? ' mask="url(#borgvapnaren-face)"' : ''}>
       <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"${art.transform ? ` transform="${art.transform}"` : ''}/>
     </g>
     ${item.slot === 'armor' ? `
@@ -1325,8 +1346,9 @@ function fittedGearLayer(item) {
 
 function wornCape(armor) {
   if (!armor) return '';
+  const cape = FITTED_ART[armor.id]?.cape || 'mantel';
   return `<svg class="painted-gear painted-cape" viewBox="0 0 384 384" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-    <image data-armor-cape="blue" href="${gearImage('mantel')}" x="89" y="114" width="138" height="160"/>
+    <image data-armor-cape="${cape === 'mantel' ? 'blue' : cape}" href="${gearImage(cape)}" x="89" y="114" width="138" height="160"/>
   </svg>`;
 }
 
@@ -1345,6 +1367,10 @@ function paintedGearOverlay(equipment, armor) {
         <rect x="145" y="115" width="115" height="145" fill="white"/>
         <path d="M167 141Q175 139 180 149Q185 161 177 169Q173 169 169 161Q163 153 167 141Z"/>
         <path d="M181 115H233V130Q224 131 219 136L213 143Q207 139 202 135Q192 132 183 130Z"/>
+      </mask>
+      <mask id="borgvapnaren-face" maskUnits="userSpaceOnUse" x="0" y="0" width="384" height="384">
+        <rect width="384" height="384" fill="white"/>
+        <path d="M178 94Q180 88 188 85Q193 82 198 78Q205 77 210 74Q220 76 223 83L229 101Q229 113 215 117Q198 118 187 112L180 104Z"/>
       </mask>
       <clipPath id="training-shoulder"><path d="M157 148Q159 135 171 130Q180 128 190 135L188 153Q182 167 170 174L165 174Q174 159 166 150Q162 146 157 148Z"/></clipPath>
       <clipPath id="training-sleeve"><path d="M138 160Q151 151 159 146Q165 143 171 152Q178 167 162 184L138 188Z"/></clipPath>
