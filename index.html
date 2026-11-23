@@ -1149,11 +1149,10 @@ function render(){
 function home() {
   const world = WORLDS[s.world];
   const continuing = s.step > 0 || s.battle || s.cleared.length > 0;
-  const hero = paintedHero(BATTLE_ARENAS[2]);
   const nextLevel = xpToNextLevel(s.level);
   return `<div class="home-page">
     <section class="home-cover" aria-labelledby="home-title">
-      <div class="home-character" aria-hidden="true">${heroVisual(hero)}</div>
+      <div class="home-character" aria-hidden="true">${heroVisual()}</div>
       <div class="home-intro">
         <h1 id="home-title">Riddarens resa</h1>
         <p>Träna gångertabellerna 2–9 och samla monsterkort på vägen.</p>
@@ -1254,15 +1253,10 @@ function comboMeter() {
 function questionUI(){if(!s.question)chooseQuestion();let q=s.question;return `<div class="controls"><div class="question"><div class="steptrack">${s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)} ${s.hint?`<span class="hint">Räkna: ${Array.from({length:q.b},()=>q.a).join(' + ')} = ?</span>`:''}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
 function rarity(id){return id%25===0?'Legendarisk':id%10===0?'Episk':id%4===0?'Sällsynt':'Vanlig'}
 function equipmentSummary(){return ['weapon','helmet','armor','shield'].map(slot=>ITEMS.find(i=>i.id===s.equipment[slot])).filter(Boolean).map(i=>i.art+' '+i.name).join(' · ')||'Äventyrarens startutrustning'}
-function gearOverlay(){let e=s.equipment;let weapon=e.weapon,helmet=e.helmet,armor=e.armor,shield=e.shield;if(!weapon&&!helmet&&!armor&&!shield)return '';let blade=weapon==='dragonblade'?'#f16a39':weapon==='fire'?'#ffb32c':weapon==='silver'?'#d9ecf4':weapon==='steel'?'#a9c7dc':'#c3c4bd';let metal=armor==='plate'?'#c2d3e2':armor==='armor'?'#899fb2':'#805d40';return `<svg class="gear-overlay" viewBox="0 0 256 256" aria-hidden="true">${armor?`<path d="M101 112 L155 112 L163 171 Q127 187 91 168 Z" fill="${metal}" stroke="#e5c891" stroke-width="5"/><path d="M127 118 L127 172 M100 141 L156 141" stroke="#344453" stroke-width="5"/>`:''}${helmet?`<path d="M93 78 Q91 34 127 30 Q163 34 161 79 L155 99 L100 99Z" fill="${helmet==='crown'?'#c8a54b':'#8fa2af'}" stroke="#f1d58a" stroke-width="5"/><path d="M99 79 L156 79" stroke="#182b38" stroke-width="9"/>`:''}${shield?`<path d="M57 144 L96 144 L103 194 Q82 220 61 207 Q47 185 57 144Z" fill="${shield==='oakshield'?'#8a6035':'#5276a0'}" stroke="#e5c78a" stroke-width="6"/><path d="M78 152 L78 203 M60 177 L97 177" stroke="#f3dca2" stroke-width="5"/>`:''}${weapon?`<g transform="translate(0 0)"><path d="M183 174 L211 190" stroke="#d7b477" stroke-width="9" stroke-linecap="round"/><path d="M193 176 L224 118 L233 63 L207 108 L183 172 Z" fill="${blade}" stroke="#f8f0cf" stroke-width="3"/><path d="M181 170 L214 186" stroke="#b99151" stroke-width="8"/>${weapon==='fire'||weapon==='dragonblade'?'<path d="M211 133 Q202 115 222 91 Q216 115 233 109 Q229 129 211 133" fill="#ff7834" opacity=".85"/>':''}</g>`:''}</svg>`}
 // Paths in an arena theme refer to artwork shipped with the app.
 const BATTLE_ARENAS = {
   2: {
     layers: { background: 'assets/backgrounds/riddarskolan-arena.webp' },
-    heroes: {
-      adventurer: 'assets/characters/riddarskolan-aventyrare.webp',
-      knight: 'assets/characters/riddarskolan-riddare.webp'
-    },
     enemies: {},
     boss: 'assets/monster-6.svg',
     placeholderEnemy: card => 'assets/monster-' + (card - 1) + '.svg'
@@ -1273,15 +1267,7 @@ function activeArena() {
   return s.battle ? BATTLE_ARENAS[WORLDS[s.world].n] : undefined;
 }
 
-function heroVariant() {
-  return s.equipment.armor || s.level >= 5 ? 'knight' : 'adventurer';
-}
-
-function paintedHero(theme) {
-  const equipped = Object.values(s.equipment).some(id => ITEMS.some(item => item.id === id));
-  if (equipped) return BATTLE_ARENAS[2].heroes.adventurer;
-  return theme?.heroes?.[heroVariant()];
-}
+const HERO_IMAGE = 'assets/characters/riddarskolan-aventyrare.webp';
 
 function paintedGearOverlay(equipment) {
   const part = slot => ITEMS.find(item => item.id === equipment[slot]);
@@ -1329,9 +1315,17 @@ function paintedGearOverlay(equipment) {
       </filter>
     </defs>
     ${armor ? `<g data-worn-slot="armor" data-worn-item="${armor.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
-      ${forest(armor) ? `<path d="M159 121Q141 130 141 154Q131 191 104 229Q89 253 92 274L108 282Q109 301 144 309L151 286Q143 261 146 247Q130 251 133 230L143 207 151 174 166 143Z" fill="url(#gear-cape)" stroke="#2f3b2b" stroke-width="2" filter="url(#gear-grain)"/>
-        <path d="M148 158Q134 216 101 270M139 249Q129 278 139 301" fill="none" stroke="#afba7d" stroke-width="2.5" opacity=".5"/>
-        <path d="M137 182Q126 219 109 242M119 274Q117 290 135 302" fill="none" stroke="#304430" stroke-width="5" opacity=".55"/>` : ''}
+      <g data-armor-cape="${forest(armor) ? 'green' : 'blue'}">
+        <path d="M160 119Q141 130 141 154Q131 191 104 229Q89 253 92 274L108 282Q109 301 144 309L151 286Q143 261 146 247Q130 251 133 230L143 207 151 174 166 143Z"
+          fill="url(#gear-${forest(armor) ? 'cape' : 'plume'})" stroke="${forest(armor) ? '#2f3b2b' : '#263752'}" stroke-width="2" filter="url(#gear-grain)"/>
+        <path d="M148 158Q134 216 101 270M139 249Q129 278 139 301" fill="none"
+          stroke="${forest(armor) ? '#afba7d' : '#9daed1'}" stroke-width="2.5" opacity=".5"/>
+        <path d="M137 182Q126 219 109 242M119 274Q117 290 135 302" fill="none"
+          stroke="${forest(armor) ? '#304430' : '#233751'}" stroke-width="5" opacity=".55"/>
+        <path d="M145 147Q146 125 168 122Q179 124 183 138L175 148Q162 141 145 147Z"
+          fill="url(#gear-${forest(armor) ? 'cape' : 'plume'})" stroke="${forest(armor) ? '#2f3b2b' : '#263752'}" stroke-width="2"/>
+        <circle cx="175" cy="137" r="3.6" fill="url(#gear-edge)" stroke="#6c4a2c" stroke-width="1.3"/>
+      </g>
       <path d="M175 137Q193 149 217 143L232 151Q240 160 243 173L234 188 239 213 226 232Q200 240 178 224L166 204 169 182 156 176Z" fill="${finish(armor)}" stroke="#493426" stroke-width="2.5" filter="url(#gear-grain)"/>
       <path d="M176 142Q199 156 222 148M164 173q9-8 19-12M170 204Q200 220 235 200M177 219Q202 233 229 216" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
       ${forest(armor) ? `<path d="M174 158 178 174 174 198M231 169l-4 26M181 216q19 13 35 9" fill="none" stroke="#e6bf7b" stroke-width="1.6" stroke-dasharray="2 3"/>
@@ -1374,10 +1368,8 @@ function paintedGearOverlay(equipment) {
   </svg>`;
 }
 
-function heroVisual(painted, equipment = s.equipment) {
-  const image = painted || 'assets/' + heroVariant() + '.svg';
-  const layers = painted ? paintedGearOverlay(equipment) : gearOverlay();
-  return '<div class="hero-visual"><img src="' + image + '" alt="Din riddare">' + layers + '</div>';
+function heroVisual(equipment = s.equipment) {
+  return `<div class="hero-visual"><img src="${HERO_IMAGE}" alt="Din riddare">${paintedGearOverlay(equipment)}</div>`;
 }
 
 function sceneGear() {
@@ -1408,9 +1400,7 @@ function scene(intro = false) {
   const worldBackground = route?.image || `assets/world-${table}.svg`;
   const routeX = route ? 4 + (s.step - route.start) * 18 : 0;
   const heroX = b ? 16 : route ? routeX : Math.min(53, 12 + s.step * 3.5);
-  const theme = arena || (route && BATTLE_ARENAS[table]);
-  const painted = paintedHero(theme);
-  const gear = painted ? sceneGear() : '';
+  const gear = sceneGear();
   const palette = ['#efbf65','#b4e8de','#c9a17b','#8cc66e','#ff733b','#ff9a47','#a88be0','#9dc8ff'];
   const sceneArt = arena
     ? Object.entries(arena.layers).map(([layer, path]) => `--arena-${layer}:url('${path}')`).join(';')
@@ -1424,7 +1414,7 @@ function scene(intro = false) {
   const travel = b ? '' : `${marker ? '<div class="travel-marker">' + marker + '</div>' : ''}
     <div class="travel-progress"><div style="width:${s.step/12*100}%"></div></div>`;
   const actors = `<div class="hero-spot"></div>
-    <div class="hero" id="hero" title="${escapeHtml(equipmentSummary())}" style="left:${heroX}%">${heroVisual(painted)}</div>
+    <div class="hero" id="hero" title="${escapeHtml(equipmentSummary())}" style="left:${heroX}%">${heroVisual()}</div>
     ${b ? `<div class="enemy" id="enemy"><img src="${monsterImage(b, arena)}" alt="${escapeHtml(b.name)}"></div>` : ''}`;
   const heads = b ? `<div class="battleheads">
     <div>🛡️ Hjälten${gear}<div class="healthbar"><div style="width:${100*s.hp/maxHp()}%;background:#5caa77"></div></div></div>
@@ -1499,10 +1489,8 @@ function gearPicker(owned) {
 }
 
 function wardrobePreview(equipment, trying) {
-  const heroes = BATTLE_ARENAS[2].heroes;
-  const image = Object.values(equipment).some(Boolean) ? heroes.adventurer : heroes[heroVariant()];
   return `<div class="wardrobe-preview">
-    <div class="wardrobe-portrait">${heroVisual(image, equipment)}</div>
+    <div class="wardrobe-portrait">${heroVisual(equipment)}</div>
     <div class="wardrobe-look"><h3>${trying ? 'Prova på hjälten' : 'Din hjälte'}</h3>
       <dl>${GEAR_SLOTS.map(([slot,label]) => {
         const item = ITEMS.find(item => item.id === equipment[slot]);
