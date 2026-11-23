@@ -779,8 +779,11 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   .victory-chip { animation: none }
 }
 
-.painted-gear { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none }
-.hero-visual > img { object-position: center bottom }
+.painted-gear { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none }
+.painted-gear.painted-cape { z-index: 0 }
+.painted-cape [data-armor-cape="green"] { filter: hue-rotate(-105deg) saturate(.65) }
+.wardrobe-stock .art img { width: 75px; height: 100%; object-fit: contain }
+.hero-visual > img { position: relative; z-index: 1; object-position: center bottom }
 .illustrated-travel .hero .painted-gear { transform: translateY(min(2.34375cqw, 2.34375cqh)) }
 .wardrobe-panel { background: linear-gradient(150deg, #273a31, #142521) }
 .wardrobe-panel .top h2 { margin: 0; font-size: clamp(17px, 4vw, 25px) }
@@ -817,6 +820,10 @@ const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:
 const TYPES=['Goblin','Varg','Skelett','Rövare','Spindel','Golem','Troll','Skugga','Väktare','Drake'];const ARTS=['👺','🐺','💀','🥷','🕷️','🗿','👹','👻','🛡️','🐉'];
 const MONSTERS=Array.from({length:50},(_,i)=>({id:i+1,name:['Moss','Natt','Sten','Eld','Is'][Math.floor(i/10)]+' '+TYPES[i%10],art:ARTS[i%10],world:Math.min(7,Math.floor(i/7)),hp:25+(i%5)*7}));
 const ITEMS = [
+  { id:'trainingblade', name:'Övningssvärd', art:'🗡️', slot:'weapon', world:0, price:0, damage:0, look:'training', shopOnly:true },
+  { id:'trainingvest', name:'Träningsväst med mantel', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'training', shopOnly:true },
+  { id:'traininghelm', name:'Övningshjälm', art:'🪖', slot:'helmet', world:0, price:25, hp:10, look:'training', shopOnly:true },
+  { id:'trainingshield', name:'Rund träsköld', art:'🛡️', slot:'shield', world:0, price:35, block:5, look:'training', shopOnly:true },
   { id:'woodblade', name:'Skogsblad', art:'🍃', slot:'weapon', world:0, price:25, damage:0, look:'forest', shopOnly:true },
   { id:'wildcoat', name:'Skogsväst', art:'🧥', slot:'armor', world:0, price:35, hp:8, look:'forest', shopOnly:true },
   { id:'leafhood', name:'Lövhuva', art:'🌿', slot:'helmet', world:0, price:35, hp:10, look:'forest', shopOnly:true },
@@ -847,6 +854,7 @@ const GEAR_SLOTS = [
   ['armor', 'Rustning'], ['weapon', 'Svärd'], ['helmet', 'Hjälm'], ['shield', 'Sköld']
 ];
 const OUTFITS = {
+  training: { name: 'träningsutrustningen', gear: { armor:'trainingvest', weapon:'trainingblade', helmet:'traininghelm', shield:'trainingshield' } },
   forest: { name: 'Skogsväktaren', gear: { armor:'wildcoat', weapon:'woodblade', helmet:'leafhood', shield:'oakshield' } },
   royal: { name: 'Gyllene riddaren', gear: { armor:'goldcoat', weapon:'sunblade', helmet:'helm', shield:'sunshield' } }
 };
@@ -1267,11 +1275,41 @@ function activeArena() {
   return s.battle ? BATTLE_ARENAS[WORLDS[s.world].n] : undefined;
 }
 
-const HERO_IMAGE = 'assets/characters/riddarskolan-aventyrare.webp';
+const HERO_IMAGE = 'assets/characters/borgvapnaren.webp';
+const TRAINING_ART = {
+  trainingblade: { file:'svard', x:62, y:48, width:79, height:152 },
+  trainingvest: { file:'vast', x:151, y:121, width:98, height:132 },
+  traininghelm: { file:'hjalm', x:132, y:22, width:108, height:103 },
+  trainingshield: { file:'skold', x:229, y:184, width:80, height:96 }
+};
 
-function paintedGearOverlay(equipment) {
+function gearImage(file) {
+  return 'assets/characters/borgvapnaren-' + file + '.webp';
+}
+
+function trainingLayer(item) {
+  const art = TRAINING_ART[item.id];
+  return `<g data-worn-slot="${item.slot}" data-worn-item="${item.id}">
+    <image href="${gearImage(art.file)}" x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}"/>
+  </g>`;
+}
+
+function wornCape(armor) {
+  if (!armor) return '';
+  const forest = armor.look === 'forest';
+  return `<svg class="painted-gear painted-cape" viewBox="0 0 384 384" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <image data-armor-cape="${forest ? 'green' : 'blue'}" href="${gearImage('mantel')}" x="89" y="114" width="138" height="160"/>
+  </svg>`;
+}
+
+function gearThumbnail(item) {
+  const art = TRAINING_ART[item.id];
+  return art ? `<img src="${gearImage(art.file)}" alt="">` : item.art;
+}
+
+function paintedGearOverlay(equipment, armor) {
   const part = slot => ITEMS.find(item => item.id === equipment[slot]);
-  const armor = part('armor'), helmet = part('helmet'), weapon = part('weapon'), shield = part('shield');
+  const helmet = part('helmet'), weapon = part('weapon'), shield = part('shield');
   if (!armor && !helmet && !weapon && !shield) return '';
   const forest = item => item.look === 'forest';
   const material = item => forest(item) ? 'leather' : item.look === 'royal' ? 'brass' : 'steel';
@@ -1279,6 +1317,7 @@ function paintedGearOverlay(equipment) {
   const emblem = item => forest(item) ? '#e9c783' : item.look === 'royal' ? '#fff2bb' : '#e3ecdf';
   return `<svg class="painted-gear" viewBox="0 0 384 384" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
     <defs>
+      <clipPath id="borgvapnaren-grip"><path d="M109 159Q108 151 115 150L127 149Q135 150 137 157L137 174 131 181 116 180Q109 172 109 159Z"/></clipPath>
       <radialGradient id="gear-leather" cx=".31" cy=".26" r=".8">
         <stop stop-color="#b7a56b"/><stop offset=".5" stop-color="#67653c"/><stop offset="1" stop-color="#302c1c"/>
       </radialGradient>
@@ -1314,18 +1353,8 @@ function paintedGearOverlay(equipment) {
         <feDropShadow dx="1.5" dy="2.6" stdDeviation="2" flood-color="#221a18" flood-opacity=".7"/>
       </filter>
     </defs>
-    ${armor ? `<g data-worn-slot="armor" data-worn-item="${armor.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
-      <g data-armor-cape="${forest(armor) ? 'green' : 'blue'}">
-        <path d="M160 119Q141 130 141 154Q131 191 104 229Q89 253 92 274L108 282Q109 301 144 309L151 286Q143 261 146 247Q130 251 133 230L143 207 151 174 166 143Z"
-          fill="url(#gear-${forest(armor) ? 'cape' : 'plume'})" stroke="${forest(armor) ? '#2f3b2b' : '#263752'}" stroke-width="2" filter="url(#gear-grain)"/>
-        <path d="M148 158Q134 216 101 270M139 249Q129 278 139 301" fill="none"
-          stroke="${forest(armor) ? '#afba7d' : '#9daed1'}" stroke-width="2.5" opacity=".5"/>
-        <path d="M137 182Q126 219 109 242M119 274Q117 290 135 302" fill="none"
-          stroke="${forest(armor) ? '#304430' : '#233751'}" stroke-width="5" opacity=".55"/>
-        <path d="M145 147Q146 125 168 122Q179 124 183 138L175 148Q162 141 145 147Z"
-          fill="url(#gear-${forest(armor) ? 'cape' : 'plume'})" stroke="${forest(armor) ? '#2f3b2b' : '#263752'}" stroke-width="2"/>
-        <circle cx="175" cy="137" r="3.6" fill="url(#gear-edge)" stroke="#6c4a2c" stroke-width="1.3"/>
-      </g>
+    ${armor ? TRAINING_ART[armor.id] ? trainingLayer(armor) : `<g data-worn-slot="armor"
+      data-worn-item="${armor.id}" transform="translate(0 -58) scale(1 1.32)" filter="url(#gear-shadow)" stroke-linejoin="round">
       <path d="M175 137Q193 149 217 143L232 151Q240 160 243 173L234 188 239 213 226 232Q200 240 178 224L166 204 169 182 156 176Z" fill="${finish(armor)}" stroke="#493426" stroke-width="2.5" filter="url(#gear-grain)"/>
       <path d="M176 142Q199 156 222 148M164 173q9-8 19-12M170 204Q200 220 235 200M177 219Q202 233 229 216" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
       ${forest(armor) ? `<path d="M174 158 178 174 174 198M231 169l-4 26M181 216q19 13 35 9" fill="none" stroke="#e6bf7b" stroke-width="1.6" stroke-dasharray="2 3"/>
@@ -1335,7 +1364,7 @@ function paintedGearOverlay(equipment) {
         <path d="M204 154l5 10 12 2-9 7 2 12-10-6-10 6 2-12-9-7 12-2Z" fill="url(#gear-edge)" stroke="#785327" stroke-width="1.5"/>`}
       <g fill="${emblem(armor)}"><circle cx="170" cy="173" r="2.4"/><circle cx="233" cy="173" r="2.4"/><circle cx="179" cy="214" r="2"/><circle cx="225" cy="216" r="2"/></g>
     </g>` : ''}
-    ${helmet ? `<g data-worn-slot="helmet" data-worn-item="${helmet.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
+    ${helmet ? TRAINING_ART[helmet.id] ? trainingLayer(helmet) : `<g data-worn-slot="helmet" data-worn-item="${helmet.id}" transform="translate(-8 13)" filter="url(#gear-shadow)" stroke-linejoin="round">
       ${forest(helmet) ? '' : '<path d="M176 40Q177 10 221 9L228 13Q216 19 212 34Z" fill="url(#gear-plume)" stroke="#333755" stroke-width="2"/><path d="M185 33Q194 18 215 15" fill="none" stroke="#a4b7d4" stroke-width="1.5"/>'}
       <path d="${forest(helmet) ? 'M147 71Q149 36 189 26L225 32 244 53 218 52 195 57 182 76 178 101 157 94Z' : 'M147 73Q149 40 178 31L202 26 231 36 249 59 235 72 221 57 191 64 183 89 165 101 153 92Z'}" fill="${finish(helmet)}" stroke="#504031" stroke-width="2.5" filter="url(#gear-grain)"/>
       <path d="M154 76Q174 48 216 46L240 57M158 84q7-21 23-25" fill="none" stroke="url(#gear-edge)" stroke-width="3"/>
@@ -1346,16 +1375,18 @@ function paintedGearOverlay(equipment) {
         <path d="M161 81l1 6m4-8 1 5" stroke="#684c33" stroke-width="2.5" stroke-linecap="round"/>
         <circle cx="170" cy="74" r="3.7" fill="url(#gear-edge)" stroke="#654931" stroke-width="1.4"/>`}
     </g>` : ''}
-    ${weapon ? `<g data-worn-slot="weapon" data-worn-item="${weapon.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
-      <path d="M159 252 169 241Q${forest(weapon) ? '206 259 216 289' : '211 257 232 302'}Q187 292 159 252Z" fill="url(#gear-steel)" stroke="#423b32" stroke-width="2"/>
-      <path d="M163 249Q189 266 ${forest(weapon) ? '214 287' : '228 298'}" fill="none" stroke="#fff0c6" stroke-width="2"/>
-      <path d="M173 248q18 13 29 27" fill="none" stroke="#465060" stroke-width="2.5" opacity=".7"/>
-      <path d="M139 232 163 248" stroke="#57402e" stroke-width="7" stroke-linecap="round"/>
-      <path d="M142 234l-1 4m5-1-1 4m5-1-1 4" stroke="#c6a876" stroke-width="2"/>
-      <path d="M152 255Q161 245 169 237" stroke="url(#gear-edge)" stroke-width="7" fill="none" stroke-linecap="round"/>
-      <circle cx="162" cy="246" r="3" fill="${forest(weapon) ? '#a6af64' : '#c47437'}" stroke="#f0cc86" stroke-width="1.6"/>
-    </g>` : ''}
-    ${shield ? `<g data-worn-slot="shield" data-worn-item="${shield.id}" filter="url(#gear-shadow)" stroke-linejoin="round">
+    ${weapon ? `${TRAINING_ART[weapon.id] ? trainingLayer(weapon) :
+      `<g data-worn-slot="weapon" data-worn-item="${weapon.id}" transform="translate(123 165) rotate(-24)"
+        filter="url(#gear-shadow)" stroke-linejoin="round">
+        <path d="${forest(weapon) ? 'M-8-19Q-16-59-5-116Q7-103 8-78L8-19Z' : 'M-9-19V-104L0-121 9-104V-19Z'}"
+          fill="url(#gear-steel)" stroke="#473d33" stroke-width="2"/>
+        <path d="M0-20V-108" fill="none" stroke="#ecdfaf" stroke-width="2"/>
+        <path d="M0-17V20" stroke="#59402d" stroke-width="10" stroke-linecap="round"/>
+        <path d="M-14-20Q0-16 14-20" stroke="url(#gear-edge)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cy="24" r="6" fill="url(#gear-edge)" stroke="#715137" stroke-width="1.5"/>
+      </g>`}
+      <image data-grip-layer href="${HERO_IMAGE}" width="384" height="384" clip-path="url(#borgvapnaren-grip)"/>` : ''}
+    ${shield ? TRAINING_ART[shield.id] ? trainingLayer(shield) : `<g data-worn-slot="shield" data-worn-item="${shield.id}" transform="translate(-12 -6)" filter="url(#gear-shadow)" stroke-linejoin="round">
       <path d="${forest(shield) ? 'M277 199c24 0 43 17 43 41s-19 42-43 42-43-18-43-42 19-41 43-41Z' : 'M241 205 277 194 311 205 307 245Q301 272 277 293 253 274 244 246Z'}" fill="${forest(shield) ? 'url(#gear-wood)' : finish(shield)}" stroke="#4a3223" stroke-width="5" filter="url(#gear-grain)"/>
       <path d="${forest(shield) ? 'M277 203c22 0 39 16 39 37s-17 38-39 38-39-17-39-38 17-37 39-37Z' : 'M246 209 277 199 306 208 302 243Q296 267 277 286 258 268 249 244Z'}" fill="none" stroke="url(#gear-edge)" stroke-width="3.7"/>
       ${forest(shield) ? `<path d="M259 208q-7 20 0 59m12-58q-5 24 0 63m16-64q5 31-2 62m13-54q5 25-2 45" fill="none" stroke="#533722" opacity=".57" stroke-width="2"/>
@@ -1369,7 +1400,8 @@ function paintedGearOverlay(equipment) {
 }
 
 function heroVisual(equipment = s.equipment) {
-  return `<div class="hero-visual"><img src="${HERO_IMAGE}" alt="Din riddare">${paintedGearOverlay(equipment)}</div>`;
+  const armor = ITEMS.find(item => item.id === equipment.armor);
+  return `<div class="hero-visual">${wornCape(armor)}<img src="${HERO_IMAGE}" alt="Din riddare">${paintedGearOverlay(equipment, armor)}</div>`;
 }
 
 function sceneGear() {
@@ -1440,7 +1472,7 @@ function game() {
   const fighting = s.phase === 'battle';
   const intro = encounterActive(battle);
   const attacks = fighting ? `<div class="actions">${[
-    ['slash', '⚔️ Svärd ' + dmg()], ['power', '💥 Kraft ' + powerDamage() + ' (2 tal)']
+    ['slash', (s.equipment.weapon ? '⚔️ Svärd ' : '👊 Slag ') + dmg()], ['power', '💥 Kraft ' + powerDamage() + ' (2 tal)']
   ].map(([action,label]) => `<button class="btn ${battle?.move === action ? '' : 'secondary'} small"
     data-move="${action}" ${intro || battle?.pending ? 'disabled' : ''}>${label}</button>`).join('')}</div>` : '';
   const bossPhase = fighting && battle?.boss ? `<div class="boss-phase">👑 BOSS · Fas ${battle.phase || 1}/2 ·
@@ -1494,7 +1526,7 @@ function wardrobePreview(equipment, trying) {
     <div class="wardrobe-look"><h3>${trying ? 'Prova på hjälten' : 'Din hjälte'}</h3>
       <dl>${GEAR_SLOTS.map(([slot,label]) => {
         const item = ITEMS.find(item => item.id === equipment[slot]);
-        return `<div><dt>${label}</dt><dd>${item?.name || 'Startutrustning'}</dd></div>`;
+        return `<div><dt>${label}</dt><dd>${item?.name || 'Tom plats'}</dd></div>`;
       }).join('')}</dl>
       ${trying ? `<div class="wardrobe-outfits">${Object.entries(OUTFITS).map(([id,outfit]) =>
         `<button class="btn secondary small" data-outfit="${id}">Prova ${outfit.name}</button>`).join('')}
@@ -1519,18 +1551,18 @@ function shop() {
       const owned = s.inventory.includes(item.id);
       const available = itemAvailable(item);
       return `<div class="shopitem">
-        <div class="art">${item.art}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
-        <small>${owned ? 'Ägd' : available ? item.price + ' guld' : 'Låses upp i ' + WORLDS[item.world].name}</small>
+        <div class="art">${gearThumbnail(item)}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
+        <small>${owned ? 'Ägd' : available ? (item.price ? item.price + ' guld' : 'Gratis') : 'Låses upp i ' + WORLDS[item.world].name}</small>
         <div class="actions">
           <button class="btn secondary small" data-try-item="${item.id}" aria-pressed="${draft[item.slot] === item.id}">${draft[item.slot] === item.id ? 'Provas' : 'Prova'}</button>
-          ${owned ? '' : `<button class="btn small" data-buy="${item.id}" ${!available || s.gold < item.price ? 'disabled' : ''}>Köp</button>`}
+          ${owned ? '' : `<button class="btn small" data-buy="${item.id}" ${!available || s.gold < item.price ? 'disabled' : ''}>${item.price ? 'Köp' : 'Hämta'}</button>`}
         </div></div>`;
     }).join('')}</div>
     <div class="shop-guide">
       <strong>${WORLDS[s.world].boss} · ${balance.bossHp} HP</strong>
-      <p>Starkaste motattacken gör ${danger} skada före skölden. Du har ${maxHp()} max HP och gör ${dmg()} svärdskada.</p>
+      <p>Starkaste motattacken gör ${danger} skada före skölden. Du har ${maxHp()} max HP och gör ${dmg()} grundskada.</p>
       ${danger >= maxHp() ? '<p class="danger">Ett enda sådant slag kan fälla hjälten. Öka max HP med bättre rustning eller hjälm.</p>' : ''}
-      <p>${gear.length ? 'Rekommenderad utrustning: '+gear.map(item=>item.name+' ('+item.price+' guld)').join(' och ')+'.' : 'Startsvärdet räcker för sex rätta attacktal mot Goblinkungen.'}</p>
+      <p>${gear.length ? 'Rekommenderad utrustning: '+gear.map(item=>item.name+' ('+item.price+' guld)').join(' och ')+'.' : 'Grundattacken räcker för sex rätta attacktal mot Goblinkungen. Hämta ett gratis övningssvärd i smedjan.'}</p>
     </div>
   </div>`;
 }
@@ -1546,7 +1578,7 @@ function inventory() {
     <div class="grid wardrobe-stock">${slotItems.map(item => {
       const equipped = s.equipment[item.slot] === item.id;
       return `<div class="shopitem">
-        <div class="art">${item.art}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
+        <div class="art">${gearThumbnail(item)}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
         <div class="actions">${equipped ?
           `<button class="btn secondary small" data-remove-gear="${item.slot}">Ta av</button>` :
           `<button class="btn small" data-equip="${item.id}">Utrusta</button>`}</div></div>`;
@@ -2105,7 +2137,8 @@ function correctBattle(battle, assisted, bonus) {
   correctReward(action === 'power' ? 'power' : 'hit', assisted, bonus, inflicted);
   document.getElementById('hero')?.classList.add('hit');
   document.getElementById('enemy')?.classList.add('hurt');
-  combatFx('hero', { icon: action === 'power' ? '💥⚔️' : '⚔️' }, inflicted);
+  const strike = s.equipment.weapon ? '⚔️' : '👊';
+  combatFx('hero', { icon: action === 'power' ? '💥' + strike : strike }, inflicted);
   battleSound(action === 'power' ? 'power' : 'hit');
   setTimeout(() => {
     if (s.battle !== battle) {
