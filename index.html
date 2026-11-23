@@ -676,6 +676,55 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .shop-guide p { margin: 4px 0; font-size: 14px }
 .shop-guide .danger { color: #ffc9a3; font-weight: 700 }
 #gear-feedback { min-height: 1.2em; margin: 4px 0 0 }
+
+.encounter-intro .enemy {
+  animation: encounter-reveal var(--encounter-duration) ease-out var(--encounter-offset) both;
+}
+.encounter-light {
+  position: absolute;
+  z-index: 2;
+  inset: 16% 1% 0 48%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 67% 65%, #ffe8a98c, transparent 63%);
+  animation: encounter-light var(--encounter-duration) ease-out var(--encounter-offset) both;
+}
+.boss-scene .encounter-light {
+  background: radial-gradient(ellipse at 67% 65%, #ffc758c7, transparent 68%);
+}
+.encounter-caption {
+  position: absolute;
+  z-index: 8;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 1px;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  padding: 5px 14px;
+  border: 1px solid #c2a26a;
+  border-radius: 10px;
+  background: #121e19f2;
+  text-align: center;
+  color: #ffe5ab;
+  pointer-events: none;
+}
+.encounter-caption span, .encounter-caption small { font-size: clamp(10px, 2.6vw, 13px) }
+.encounter-caption strong { font: 700 clamp(16px, 4vw, 25px)/1.1 Georgia, serif }
+.boss-scene .encounter-caption { border-color: #f1c574; background: #281c14f2 }
+@keyframes encounter-reveal {
+  0%, 15% { opacity: 0; transform: translateX(24%) scaleX(-.84) scaleY(.84); filter: brightness(.3) }
+  43% { opacity: .78; transform: translateX(5%) scaleX(-1.01) scaleY(1.01); filter: brightness(.75) }
+  63%, 100% { opacity: 1; transform: scaleX(-1) }
+}
+@keyframes encounter-light {
+  0%, 15%, 100% { opacity: 0 }
+  43% { opacity: .9 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .encounter-intro .enemy { animation: none }
+  .encounter-light { display: none }
+}
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="brand">⚔ Multiplikationsriket</div><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -883,6 +932,71 @@ function actionSound(kind){
   }
  }catch{}
 }
+// Each boss has a different pitched accent over the common low entrance hit.
+const BOSS_ENTRANCE_TONES = [
+  [155, 69, 'triangle'],  // Goblinkungen: klubban
+  [330, 110, 'square'],   // Benkaptenen: rasslande ben
+  [92, 36, 'sine'],       // Stengolemen: skalv
+  [210, 56, 'triangle'],  // Mossatrollet: dovt morr
+  [245, 82, 'sawtooth'],  // Eldjätten: fräsande låga
+  [290, 53, 'sawtooth'],  // Drakfursten: vrål
+  [102, 215, 'sine'],     // Skuggkungen: stigande skugga
+  [740, 185, 'triangle']  // Mörkermagikern: blixt
+];
+
+function encounterSound(boss, world) {
+  if (!s.sound) return;
+  unlockAudio();
+  if (!audioCtx) return;
+  try {
+    const ctx = audioCtx;
+    const now = ctx.currentTime;
+    const tone = (from, to, delay, duration, volume, wave) => {
+      const start = now + delay;
+      const oscillator = ctx.createOscillator(), gain = ctx.createGain();
+      oscillator.type = wave;
+      oscillator.frequency.setValueAtTime(from, start);
+      oscillator.frequency.exponentialRampToValueAtTime(to, start + duration);
+      gain.gain.setValueAtTime(.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + .025);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration);
+    };
+    const impact = boss ? .72 : .38;
+    const duration = boss ? .43 : .22;
+    const grit = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * duration), ctx.sampleRate);
+    const samples = grit.getChannelData(0);
+    // A small deterministic noise burst leaves gameplay randomness untouched.
+    let seed = 17;
+    for (let i = 0; i < samples.length; i++) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      samples[i] = seed / 2147483648 - 1;
+    }
+    const burst = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), envelope = ctx.createGain();
+    burst.buffer = grit;
+    filter.type = 'lowpass';
+    filter.frequency.value = boss ? 760 : 1900;
+    envelope.gain.setValueAtTime(.12, now + impact);
+    envelope.gain.exponentialRampToValueAtTime(.0001, now + impact + duration);
+    burst.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(ctx.destination);
+    burst.start(now + impact);
+    if (boss) {
+      const [from,to,wave] = BOSS_ENTRANCE_TONES[world];
+      tone(65, 48, .03, .64, .12, 'sine');
+      tone(from, to, impact, .69, .075, wave);
+      tone(78, 34, impact, .48, .17, 'sine');
+    } else {
+      tone(330, 214, .04, .25, .07, 'triangle');
+      tone(188, 107, impact, .27, .10, 'triangle');
+    }
+  } catch {}
+}
+
 function save(){try{localStorage.setItem(STORE,JSON.stringify(s))}catch{notice='Kunde inte spara. Exportera en säkerhetskopia.'}}function xp(amount) {
   s.xp += amount;
   while (s.xp >= xpToNextLevel(s.level)) {
@@ -1075,7 +1189,7 @@ const TRAVEL_BACKGROUNDS = {
   ]
 };
 
-function scene() {
+function scene(intro = false) {
   const b = s.battle, arena = activeArena();
   const table = WORLDS[s.world].n;
   const route = !b && TRAVEL_BACKGROUNDS[table]?.find(stop => s.step >= stop.start);
@@ -1104,13 +1218,45 @@ function scene() {
     <div>🛡️ Hjälten${gear}<div class="healthbar"><div style="width:${100*s.hp/maxHp()}%;background:#5caa77"></div></div></div>
     <div>${escapeHtml(b.name)}<div class="healthbar"><div style="width:${100*b.hp/b.maxHp}%"></div></div></div>
   </div>` : '';
-  const stage = layers + bossEffects + travel + actors;
-  return `<div class="scene ${b?'battle-scene':''} ${b?.boss?'boss-scene':''} ${arena?'layered-arena':''} ${route?'illustrated-travel':''}" id="scene" style="${sceneArt}">
+  const reveal = intro ? '<div class="encounter-light" aria-hidden="true"></div>' : '';
+  const caption = intro ? `<div class="encounter-caption" role="status">
+    <span>${b.boss ? 'Bossen träder fram' : 'Ett monster blockerar vägen'}</span>
+    <strong>${escapeHtml(b.name)}</strong>
+    ${b.intro.stepXp ? `<small>${b.intro.assisted ? 'Du löste det! · ' : ''}+${b.intro.stepXp} XP${b.intro.bonus ? ' · Kombo +' + b.intro.bonus + ' guld och XP' : ''}</small>` : ''}
+  </div>` : '';
+  const timing = intro
+    ? `;--encounter-duration:${b.intro.duration}ms;--encounter-offset:${Math.min(0, b.intro.endsAt - Date.now() - b.intro.duration)}ms`
+    : '';
+  const stage = layers + bossEffects + travel + reveal + actors;
+  return `<div class="scene ${b?'battle-scene':''} ${b?.boss?'boss-scene':''} ${arena?'layered-arena':''} ${route?'illustrated-travel':''} ${intro?'encounter-intro':''}" id="scene" style="${sceneArt}${timing}">
     ${arena ? '<div class="arena-camera">' + stage + '</div>' : stage}
-    ${heads}${route ? gear : ''}<div id="effect"></div><div class="battle-fx" id="battle-fx" aria-hidden="true"></div>
+    ${heads}${caption}${route ? gear : ''}<div id="effect"></div><div class="battle-fx" id="battle-fx" aria-hidden="true"></div>
   </div>`;
 }
-function game(){let w=WORLDS[s.world];return `<div class="panel game-panel${activeArena()?' arena-panel':''}"><div class="top"><b>${w.emoji} ${w.name}</b><div class="game-status"><span class="steptrack">${s.phase==='battle'?'STRID':`STEG ${s.step}/12`}</span>${comboMeter()}</div></div>${scene()}${s.phase==='battle'&&s.battle?.boss?'<div class="boss-phase">👑 BOSS · Fas '+(s.battle.phase||1)+'/2 · '+(s.battle.phase===2?'⚡ '+BOSS_SKILLS[s.world].name:'Vid halva hälsan väcks bossens kraft')+'</div>':''}${s.phase==='battle'?`<div class="actions">${[['slash','⚔️ Svärd '+dmg()],['power','💥 Kraft '+(powerDamage())+' (2 tal)']].map(([a,l])=>`<button class="btn ${s.battle?.move===a?'':'secondary'} small" data-move="${a}" ${s.battle?.pending?'disabled':''}>${l}</button>`).join('')}</div>`:''}${s.event?'<p class="hint">🎁 En händelse väntar. Tryck på Fortsätt.</p>':s.phase==='battle'&&!s.battle?.move?'<p class="hint">Välj din attack för att få en matteuppgift.</p>':questionUIIfReady()}<div class="steptrack">${s.phase==='battle'?s.battle?.boss?'👑 Blockera bossens motattacker inom 5 sekunder. Vid 0 HP börjar världen om.':'Fienden slår tillbaka. Vid 0 HP börjar du om på världen.':'Lös tal för att röra dig framåt. Händelser väntar längs vägen.'}</div></div>`}
+function game() {
+  const world = WORLDS[s.world], battle = s.battle;
+  const fighting = s.phase === 'battle';
+  const intro = encounterActive(battle);
+  const attacks = fighting ? `<div class="actions">${[
+    ['slash', '⚔️ Svärd ' + dmg()], ['power', '💥 Kraft ' + powerDamage() + ' (2 tal)']
+  ].map(([action,label]) => `<button class="btn ${battle?.move === action ? '' : 'secondary'} small"
+    data-move="${action}" ${intro || battle?.pending ? 'disabled' : ''}>${label}</button>`).join('')}</div>` : '';
+  const bossPhase = fighting && battle?.boss ? `<div class="boss-phase">👑 BOSS · Fas ${battle.phase || 1}/2 ·
+    ${battle.phase === 2 ? '⚡ ' + BOSS_SKILLS[s.world].name : 'Vid halva hälsan väcks bossens kraft'}</div>` : '';
+  const prompt = s.event ? '<p class="hint">🎁 En händelse väntar. Tryck på Fortsätt.</p>' :
+    intro ? '<p class="hint">Gör dig redo!</p>' :
+    fighting && !battle?.move ? '<p class="hint">Välj din attack för att få en matteuppgift.</p>' : questionUIIfReady();
+  const advice = fighting ? battle?.boss ?
+    '👑 Blockera bossens motattacker inom 5 sekunder. Vid 0 HP börjar världen om.' :
+    'Fienden slår tillbaka. Vid 0 HP börjar du om på världen.' :
+    'Lös tal för att röra dig framåt. Händelser väntar längs vägen.';
+  return `<div class="panel game-panel${activeArena() ? ' arena-panel' : ''}">
+    <div class="top"><b>${world.emoji} ${world.name}</b><div class="game-status">
+      <span class="steptrack">${fighting ? 'STRID' : 'STEG ' + s.step + '/12'}</span>${comboMeter()}
+    </div></div>
+    ${scene(intro)}${bossPhase}${attacks}${prompt}<div class="steptrack">${advice}</div>
+  </div>`;
+}
 function questionUIIfReady(){return s.event||s.pendingDefense||s.gearChallenge||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
 function itemAvailable(item) {
   return item.world === 0 || s.cleared.includes(item.world - 1);
@@ -1155,7 +1301,22 @@ function shop() {
 }
 function cards(){let total=MONSTERS.length,owned=MONSTERS.filter(m=>s.cards.includes(m.id));let byWorld=WORLDS.map((w,i)=>{let all=MONSTERS.filter(m=>m.world===i),got=all.filter(m=>s.cards.includes(m.id));return '<span class="pill">'+w.emoji+' '+got.length+'/'+all.length+'</span>'}).join(' ');return `<div class="panel"><h2 class="title">📖 Monsterboken ${owned.length}/${total}</h2><p>Besegra monster för att låsa upp deras kort. Samla alla i en värld för en engångsbonus på 75 guld och 50 XP. Återvänd till tidigare världar via kartan för att samla de kort du saknar. Monster väljs i första hand bland oupptäckta kort i världen.</p><p>${byWorld}</p><p class="hint">✨ Vanlig · 💠 Sällsynt · 💜 Episk · 🟡 Legendarisk. Kortens sällsynthet påverkar samlingen, inte matematiken.</p><div class="cards">${MONSTERS.map(m=>{let has=s.cards.includes(m.id),tier=rarity(m.id);return `<div class="monster ${has?'':'locked'}" ${has?'data-card="'+m.id+'" role="button" tabindex="0"':''} title="${has?escapeHtml(m.name):'Besegra monster i '+escapeHtml(WORLDS[m.world].name)}"><div class="art">${has?`<img src="assets/card-${String(m.id).padStart(2,'0')}.svg" alt="">`:'<img src="assets/card-'+String(m.id).padStart(2,'0')+'.svg" alt="Okänt monster">'}</div><b>${has?escapeHtml(m.name):'Okänd'}</b><div class="steptrack">#${String(m.id).padStart(2,'0')} · ${has?tier:'Låst'}</div><div class="steptrack">${WORLDS[m.world].name}</div></div>`}).join('')}</div></div>`}
 function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2><p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.22 · Mobilanpassad mobilhöjd · femsekundersblockering och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
-function battleAt(step){
+let encounterTimer;
+
+function encounterActive(battle = s.battle) {
+  return !!battle?.intro && Date.now() < battle.intro.endsAt;
+}
+
+function scheduleEncounterEnd(battle) {
+  clearTimeout(encounterTimer);
+  encounterTimer = setTimeout(() => {
+    if (s.battle !== battle || screen !== 'game') return;
+    if (encounterActive(battle)) scheduleEncounterEnd(battle);
+    else render();
+  }, Math.max(0, battle.intro.endsAt - Date.now()));
+}
+
+function battleAt(step, reward = {}) {
  if(s.phase==='battle'||s.event)return;
  const boss=step===12, balance=worldBalance(s.world);
  const hp=boss?balance.bossHp:step===8?46+22*s.world:36+15*s.world;
@@ -1164,8 +1325,16 @@ function battleAt(step){
  let unseen=candidates.filter(m=>!s.cards.includes(m.id));let selected=unseen.length?unseen[0]:candidates[s.turn%candidates.length];
  s.turn++;let m=selected;
  s.battle={name:boss?WORLDS[s.world].boss:m.name,art:boss?WORLDS[s.world].bossArt:m.art,hp,maxHp:hp,damage,boss,card:m.id,move:null,pending:0,guard:0,phase:1,round:0,weakpoints:[],specialUsed:false,lastAttack:null};
+ const duration = boss ? 1760 : 1140;
+ s.battle.intro = { ...reward, duration, endsAt: Date.now() + duration };
  s.phase='battle';s.question=null;s.answer='';
- notice=boss?'👑 Bossen använder dina svåraste tal och slår tillbaka!':'Ett monster blockerar vägen!';save();render();
+ notice=boss?'👑 Bossen använder dina svåraste tal och slår tillbaka!':'Ett monster blockerar vägen!';
+ document.getElementById('correct-reward')?.remove();
+ document.getElementById('wrong-reward')?.remove();
+ save();
+ render();
+ encounterSound(boss, s.world);
+ scheduleEncounterEnd(s.battle);
 }
 function travelAnimation(){let el=document.getElementById('scene');if(!el)return;el.classList.add('travel-moving');setTimeout(()=>el.classList.remove('travel-moving'),900)}
 function wrongFeedback(){
@@ -1193,13 +1362,14 @@ function correctReward(kind,assisted,bonus=0,damage=0){
  actionSound(bonus?'combo':kind==='chest'?'chest':kind==='travel'?'step':'reward');
 }
 function coinFlight(){const hud=document.getElementById('hud');if(!hud)return;const end=hud.getBoundingClientRect();for(let i=0;i<8;i++){let coin=document.createElement('span');coin.className='flying-coin';coin.textContent='🪙';coin.style.setProperty('--coin-x',Math.round(end.left+end.width/2-innerWidth/2+(i-3)*7)+'px');coin.style.setProperty('--coin-y',Math.round(end.top+end.height/2-innerHeight*.54)+'px');coin.style.animationDelay=i*65+'ms';document.body.appendChild(coin);setTimeout(()=>coin.remove(),1250)}}
-function doStep(){
+function doStep(assisted, bonus){
  if(s.phase!=='travel'||s.event)return;
  planGearFind();
  s.step++;xp(worldBalance(s.world).stepXp);s.question=null;notice='Bra! Ett steg närmare borgen.';
  if([4,8,12].includes(s.step)){
   // Start combat before rendering so no extra travel question flashes on screen.
-  battleAt(s.step);
+  battleAt(s.step, { stepXp: worldBalance(s.world).stepXp, assisted, bonus });
+  return true;
  }else if(s.step===6){
   if(!s.rewarded.includes('chest-'+s.world)){s.chest={world:s.world};notice='🔒 Skattkistan är låst! Lös gångertalet.';chooseQuestion()}else notice='📦 Kistan är redan öppnad.';save();render();travelAnimation();
  }else{
@@ -1416,6 +1586,7 @@ function recoverGame(){
  if(s.pendingDefense){showDefense();return}
  if(s.event){showPendingEvent();return}
  if(s.phase==='battle'&&s.battle&&s.battle.hp<=0){winBattle();return}
+ if(encounterActive()){scheduleEncounterEnd(s.battle);return}
  if(s.phase==='battle'&&s.battle&&s.battle.move&&!s.question){chooseQuestion();save();render()}
 }
 
@@ -1490,8 +1661,7 @@ function wrongAnswer(battle) {
 
 function correctTravel(assisted, bonus) {
   if (!s.chest) {
-    doStep();
-    correctReward('travel', assisted, bonus);
+    if (!doStep(assisted, bonus)) correctReward('travel', assisted, bonus);
     return;
   }
   const {gold, xp: earned} = worldBalance(s.world).chest;
@@ -1580,7 +1750,7 @@ function correctBattle(battle, assisted, bonus) {
 }
 
 function answer() {
-  if (busy || s.event || s.pendingDefense || s.gearChallenge || !s.question || !s.answer) return;
+  if (busy || encounterActive() || s.event || s.pendingDefense || s.gearChallenge || !s.question || !s.answer) return;
   const battle = s.battle;
   if (s.phase === 'battle' && !battle?.move) return;
   const question = s.question;
@@ -1615,14 +1785,14 @@ function winBattle(){
  }
 }
 function move(action) {
-  if (!s.battle || busy || s.event || s.pendingDefense || s.gearChallenge || s.battle.pending) return;
+  if (!s.battle || encounterActive() || busy || s.event || s.pendingDefense || s.gearChallenge || s.battle.pending) return;
   s.battle.move = action;
   if (!s.question) chooseQuestion();
   notice = action === 'power' ? 'Två rätta svar laddar kraftattacken.' : 'Lös ett tal för att attackera.';
   save();
   render();
 }
-function key(k){if(busy||s.event||s.pendingDefense||s.gearChallenge)return;if(k==='✓'){answer();return}if(k==='⌫')s.answer=s.answer.slice(0,-1);else if(s.answer.length<3)s.answer+=k;save();render()}
+function key(k){if(busy||encounterActive()||s.event||s.pendingDefense||s.gearChallenge)return;if(k==='✓'){answer();return}if(k==='⌫')s.answer=s.answer.slice(0,-1);else if(s.answer.length<3)s.answer+=k;save();render()}
 function exportSave(){let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='multiplikationsriket-sparfil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 document.addEventListener('pointerdown',unlockAudio,{passive:true});
 document.addEventListener('touchend',unlockAudio,{passive:true});
