@@ -926,6 +926,12 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   text-shadow: 0 1px 2px #000, 0 0 3px #000;
   white-space: nowrap;
 }
+.adventure-intro-dialog details { border-top: 1px solid #82704e; padding-top: 10px }
+.adventure-intro-dialog summary { cursor: pointer; font-weight: 700; color: #ffe4a1 }
+.adventure-intro-dialog form { display: grid; gap: 6px; margin-top: 14px }
+.adventure-intro-dialog label { display: flex; align-items: center; gap: 6px; min-height: 36px }
+.adventure-intro-dialog small { color: #ded5b7 }
+.adventure-intro-dialog .btn { justify-self: start; margin-top: 4px }
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -1132,7 +1138,7 @@ const CHALLENGE_MODES = {
   recent: 'De två senast avklarade världarna',
   custom: 'Välj gångertabeller'
 };
-const STORE='multiplikationsriket-save-v1';function fresh(){return{version:1,world:0,step:0,phase:'travel',battle:null,level:1,xp:0,gold:0,hp:100,inventory:[],equipment:{},cards:[],math:{},cleared:[],question:null,lastQuestion:null,answer:'',mistakes:0,hint:false,turn:0,charge:0,bossIndex:0,event:null,stats:{correct:0,assisted:0},rewarded:[],sound:true,pendingDefense:null,chest:null,gearRoute:null,gearFinds:[],gearChallenge:null,streak:0,bestStreak:0,challengeSettings:{mode:'all',tables:[2]},challengeHistory:[],tableChallenge:null}}
+const STORE='multiplikationsriket-save-v1';function fresh(){return{version:1,adventureStarted:false,hideAdventureIntro:false,world:0,step:0,phase:'travel',battle:null,level:1,xp:0,gold:0,hp:100,inventory:[],equipment:{},cards:[],math:{},cleared:[],question:null,lastQuestion:null,answer:'',mistakes:0,hint:false,turn:0,charge:0,bossIndex:0,event:null,stats:{correct:0,assisted:0},rewarded:[],sound:true,pendingDefense:null,chest:null,gearRoute:null,gearFinds:[],gearChallenge:null,streak:0,bestStreak:0,challengeSettings:{mode:'all',tables:[2]},challengeHistory:[],tableChallenge:null}}
 function restoreSave(saved) {
   const state = { ...fresh(), ...saved };
   const settings = state.challengeSettings;
@@ -1327,10 +1333,44 @@ function render(){
   renderHud();
   document.getElementById('main').innerHTML=({home,map,game,challenge,shop,inventory,cards,mastery,settings})[screen]();
   fitGameViewport();
+  if (screen === 'home' && !adventureIntroShown && !s.hideAdventureIntro &&
+      !s.adventureStarted && !s.step && !s.turn && !s.battle && !s.cleared.length &&
+      !s.event && !s.tableChallenge) showAdventureIntro();
 }
+let adventureIntroShown = false;
+
+function showAdventureIntro() {
+  if (document.getElementById('adventure-intro')) return;
+  adventureIntroShown = true;
+  const dialog = document.createElement('dialog');
+  dialog.id = 'adventure-intro';
+  dialog.className = 'math-hint-dialog adventure-intro-dialog';
+  dialog.setAttribute('aria-labelledby', 'adventure-intro-title');
+  dialog.innerHTML = `
+    <header><h2 id="adventure-intro-title">Ditt uppdrag</h2></header>
+    <p>Rädda riket! Räkna gångertal och besegra bossarna. Om du faller börjar du om i samma värld. Tio rätt i Utmaning ger en diamant. Skaffa bättre utrustning, för bossarna blir starkare!</p>
+    <details>
+      <summary>Så fungerar spelet · för vuxna</summary>
+      <p>Spelaren tränar gångertabellerna 2–9 genom att svara på tal, ta sig genom åtta världar och möta monster och bossar. En bossseger låser upp nästa värld. Om hjälten faller börjar världens färd om från första steget med full hälsa. Utrustning, intjänade belöningar och träningsframsteg sparas. Bossarna får mer hälsa och gör mer skada längre fram. Bättre svärd, rustningar och hjälmar kan köpas för guld när spelaren når rätt klubbnivå.</p>
+      <p>I menyn Utmaning får spelaren fem minuter med de tabeller som valts i Inställningar. Varje tiotal rätt i samma runda ger en diamant. Exempelvis ger 20 rätt två diamanter och en plats i 20-klubben. Hundra rätt ger tio diamanter. Bästa rundan avgör klubbnivån och tiden för att blockera en bossattack, från 15 sekunder med noll diamanter till 5 sekunder med tio.</p>
+    </details>
+    <form method="dialog">
+      <label><input type="checkbox" ${s.hideAdventureIntro ? 'checked' : ''}> Visa inte igen</label>
+      <small>Se meddelandet igen i Inställningar.</small>
+      <button class="btn" autofocus>Stäng</button>
+    </form>`;
+  dialog.querySelector('input').addEventListener('change', event => {
+    s.hideAdventureIntro = event.target.checked;
+    save();
+  });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
 function home() {
   const world = WORLDS[s.world];
-  const continuing = s.step > 0 || s.battle || s.cleared.length > 0;
+  const continuing = s.adventureStarted || s.step > 0 || s.battle || s.cleared.length > 0;
   const nextLevel = xpToNextLevel(s.level);
   return `<div class="home-page">
     <section class="home-cover" aria-labelledby="home-title">
@@ -2184,7 +2224,7 @@ document.addEventListener('keydown', event => {
   tableChallengeKey(key === 'Enter' ? '✓' : key === 'Backspace' ? '⌫' : key);
 });
 
-function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2>${challengeSettingsUI()}<p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.22 · Mobilanpassad mobilhöjd · diamantbaserad blockeringstid och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
+function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2>${challengeSettingsUI()}<button class="btn secondary" data-action="adventure-intro">Läs introduktionen</button><p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.22 · Mobilanpassad mobilhöjd · diamantbaserad blockeringstid och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
 let encounterTimer;
 
 function encounterActive(battle = s.battle) {
@@ -2577,6 +2617,7 @@ function showPendingEvent(){
   }
 }
 function recoverGame(){
+ if(!s.adventureStarted){s.adventureStarted=true;save()}
  if(s.gearChallenge){showGearChallenge();return}
  if(s.pendingDefense){showDefense();return}
  if(s.event){showPendingEvent();return}
@@ -2888,7 +2929,7 @@ function key(k){if(busy||encounterActive()||s.event||s.pendingDefense||s.gearCha
 function exportSave(){let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='multiplikationsriket-sparfil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 document.addEventListener('pointerdown',unlockAudio,{passive:true});
 document.addEventListener('touchend',unlockAudio,{passive:true});
-document.addEventListener('click',e=>{unlockAudio();if(busy||s.pendingDefense||s.gearChallenge||s.tableChallenge)return;let b=e.target.closest('[data-nav],[data-world],[data-key],[data-move],[data-buy],[data-equip],[data-action],[data-card],[data-gear-slot],[data-try-item],[data-outfit],[data-clear-fitting],[data-remove-gear]');if(!b)return;if(b.dataset.nav){if(b.dataset.nav==='challenge'&&s.battle?.doubleDeadline)return;if(b.dataset.nav!==screen)fittingGear=null;screen=b.dataset.nav;notice='';render();if(screen==='game')recoverGame()}else if(b.dataset.world!==undefined){let i=Number(b.dataset.world);if(i===0||s.cleared.includes(i-1)){selectedMapWorld=i;render()}}else if(b.dataset.card){let m=MONSTERS.find(x=>x.id===Number(b.dataset.card));if(m&&s.cards.includes(m.id))modal('📖 '+m.name,'Kort #'+m.id+' · '+rarity(m.id)+' · '+WORLDS[m.world].name+' · '+m.hp+' HP',()=>{});}else if(b.dataset.key)key(b.dataset.key);else if(b.dataset.move)move(b.dataset.move);else if(b.dataset.buy){let i=ITEMS.find(x=>x.id===b.dataset.buy);if(i&&itemAvailable(i)&&s.gold>=i.price&&!s.inventory.includes(i.id)){s.gold-=i.price;s.inventory.push(i.id);save();render()}}else if(b.dataset.equip){let i=ITEMS.find(x=>x.id===b.dataset.equip);if(i&&s.inventory.includes(i.id)){equipItem(i);save();render();document.querySelector('.wardrobe-preview')?.scrollIntoView({ block:'nearest' })}}else if(b.dataset.action==='start-challenge'){startTableChallenge()}else if(b.dataset.action==='hint'){showMathHint()}else if(b.dataset.action==='sound'){s.sound=!s.sound;save();render();if(s.sound){unlockAudio();actionSound('reward')}}else if(b.dataset.action==='test-sound'){testAudio()}else if(b.dataset.action==='play-selected-world'){let i=selectedMapWorld===null?s.world:selectedMapWorld;if(i===0||s.cleared.includes(i-1)){if(i!==s.world){s.world=i;s.step=0;s.event=null;s.chest=null;s.gearRoute=null;s.phase='travel';s.battle=null;s.question=null;save()}selectedMapWorld=null;screen='game';notice='';render();recoverGame()}}else if(b.dataset.action==='export')exportSave();else if(b.dataset.action==='reset'){if(confirm('Vill du verkligen radera alla framsteg?')){s=fresh();save();screen='home';render()}}else handleWardrobeInput(b);});
+document.addEventListener('click',e=>{unlockAudio();if(busy||s.pendingDefense||s.gearChallenge||s.tableChallenge)return;let b=e.target.closest('[data-nav],[data-world],[data-key],[data-move],[data-buy],[data-equip],[data-action],[data-card],[data-gear-slot],[data-try-item],[data-outfit],[data-clear-fitting],[data-remove-gear]');if(!b)return;if(b.dataset.nav){if(b.dataset.nav==='challenge'&&s.battle?.doubleDeadline)return;if(b.dataset.nav!==screen)fittingGear=null;screen=b.dataset.nav;notice='';render();if(screen==='game')recoverGame()}else if(b.dataset.world!==undefined){let i=Number(b.dataset.world);if(i===0||s.cleared.includes(i-1)){selectedMapWorld=i;render()}}else if(b.dataset.card){let m=MONSTERS.find(x=>x.id===Number(b.dataset.card));if(m&&s.cards.includes(m.id))modal('📖 '+m.name,'Kort #'+m.id+' · '+rarity(m.id)+' · '+WORLDS[m.world].name+' · '+m.hp+' HP',()=>{});}else if(b.dataset.key)key(b.dataset.key);else if(b.dataset.move)move(b.dataset.move);else if(b.dataset.buy){let i=ITEMS.find(x=>x.id===b.dataset.buy);if(i&&itemAvailable(i)&&s.gold>=i.price&&!s.inventory.includes(i.id)){s.gold-=i.price;s.inventory.push(i.id);save();render()}}else if(b.dataset.equip){let i=ITEMS.find(x=>x.id===b.dataset.equip);if(i&&s.inventory.includes(i.id)){equipItem(i);save();render();document.querySelector('.wardrobe-preview')?.scrollIntoView({ block:'nearest' })}}else if(b.dataset.action==='start-challenge'){startTableChallenge()}else if(b.dataset.action==='adventure-intro'){showAdventureIntro()}else if(b.dataset.action==='hint'){showMathHint()}else if(b.dataset.action==='sound'){s.sound=!s.sound;save();render();if(s.sound){unlockAudio();actionSound('reward')}}else if(b.dataset.action==='test-sound'){testAudio()}else if(b.dataset.action==='play-selected-world'){let i=selectedMapWorld===null?s.world:selectedMapWorld;if(i===0||s.cleared.includes(i-1)){if(i!==s.world){s.world=i;s.step=0;s.event=null;s.chest=null;s.gearRoute=null;s.phase='travel';s.battle=null;s.question=null;save()}selectedMapWorld=null;screen='game';notice='';render();recoverGame()}}else if(b.dataset.action==='export')exportSave();else if(b.dataset.action==='reset'){if(confirm('Vill du verkligen radera alla framsteg?')){s=fresh();adventureIntroShown=false;save();screen='home';render()}}else handleWardrobeInput(b);});
 document.addEventListener('change',async e=>{if(e.target.id!=='import')return;try{let imported=JSON.parse(await e.target.files[0].text());if(imported.version!==1||!Array.isArray(imported.cards)||!Array.isArray(imported.cleared)||!imported.math||!Number.isInteger(imported.world)||imported.world<0||imported.world>7)throw Error('Fel format');if(confirm('Ersätt dina nuvarande framsteg med sparfilen?')){s=restoreSave(imported);save();screen='home';fittingGear=null;render();if(s.tableChallenge)showTableChallenge();else if(s.event)showPendingEvent()}}catch{alert('Kunde inte läsa sparfilen.')}});
 function syncVisibleViewport(){const h=window.visualViewport?.height||window.innerHeight;document.documentElement.style.setProperty('--visible-height',h+'px')}syncVisibleViewport();window.visualViewport?.addEventListener('resize',syncVisibleViewport);window.addEventListener('orientationchange',()=>{syncVisibleViewport();fitGameViewport()});window.visualViewport?.addEventListener('resize',fitGameViewport);
 render();if(s.tableChallenge)showTableChallenge();else if(s.gearChallenge)showGearChallenge();else if(s.pendingDefense)showDefense();else if(s.event)showPendingEvent();else if(s.battle?.doubleDeadline)recoverGame();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
