@@ -2023,6 +2023,7 @@ function challengeSettingsUI() {
     <select id="challenge-mode">${Object.entries(CHALLENGE_MODES).map(([id, label]) =>
       `<option value="${id}" ${mode === id ? 'selected' : ''}>${label}</option>`).join('')}</select>
     <div id="challenge-table-controls">${challengeTableControls()}</div>
+    <button class="btn secondary" type="button" data-nav="challenge">Tillbaka till utmaningen</button>
   </section>`;
 }
 
@@ -2086,7 +2087,7 @@ function challenge() {
         '<p>Besegra en boss eller välj andra tabeller i Inställningar.</p>'}
       <div class="actions">
         <button class="btn" type="button" data-action="start-challenge" ${!tables.length || s.battle?.doubleDeadline || s.event ? 'disabled' : ''}>Starta utmaningen</button>
-        <button class="btn secondary" type="button" data-nav="settings">Ändra inställningar</button>
+        <button class="btn secondary" type="button" data-nav="settings">Välj gångertabeller</button>
       </div>
     </div>
   </section>`;
