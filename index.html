@@ -899,6 +899,13 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   text-align: center;
   font-size: clamp(16px, 5vw, 27px);
 }
+.hint-baskets, .hint-count-totals { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; padding: 0; margin: 12px 0; list-style: none }
+.hint-basket { display: grid; justify-items: center; min-width: 43px; padding: 4px 6px; border: 1px solid #82704e; border-radius: 9px; background: #26372d; color: #fff1cd }
+.hint-basket.is-counted { background: #43513a }
+.hint-basket.is-current { box-shadow: inset 0 0 0 2px #ecc982; border-color: #ecc982 }
+.hint-basket span { font-size: 22px; line-height: 1.15 }
+.hint-count-totals li { color: #ffe4a1; font-variant-numeric: tabular-nums }
+.hint-count-totals li + li::before { content: '→'; margin-inline-end: 7px; color: #dfd3b1 }
 .hint-reveal { display: flex; align-items: center; gap: 6px; min-height: 36px; margin-bottom: 4px }
 .hint-reveal input { accent-color: #ecc982 }
 .hint-times-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; font-size: clamp(10px, 3vw, 15px); font-variant-numeric: tabular-nums }
@@ -1403,6 +1410,18 @@ function comboMeter() {
 }
 
 function questionUI(){if(!s.question)chooseQuestion();let q=s.question;const timedStrike=s.battle?.doubleDeadline;return `<div class="controls"><div class="question"><div class="steptrack">${s.battle?.doubleDeadline ? `Dubbelslag ${s.battle.pending + 1}/2 · <span id="double-time">${doubleSecondsLeft(s.battle)} s</span>` : s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad${timedStrike ? ' timed-strike-keypad' : ''}">${timedStrike ? doubleStrikeBar(s.battle) : ''}${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
+function hintGroups(a, b) {
+  const useBaskets = a * b > 24;
+  if (!useBaskets) {
+    return `<p>${a} ${a === 1 ? 'rad' : 'rader'} med ${b} ${b === 1 ? 'äpple' : 'äpplen'} i varje rad.</p>
+      <div class="hint-apple-grid" aria-hidden="true" style="--apple-columns:${b}">${'<span>🍎</span>'.repeat(a * b)}</div>`;
+  }
+  return `<p>${a} korgar med ${b} äpplen i varje korg.</p>
+    <ol class="hint-baskets" aria-hidden="true">${`<li class="hint-basket"><span>🧺</span><strong>${b}</strong></li>`.repeat(a)}</ol>
+    <button class="btn small" type="button" id="hint-count">Räkna tillsammans</button>
+    <ol class="hint-count-totals" aria-label="Summor" aria-live="polite" aria-relevant="additions"></ol>`;
+}
+
 function showMathHint() {
   const question = s.question;
   if (!question || doubleStrikeExpired(s.battle)) return;
@@ -1422,8 +1441,7 @@ function showMathHint() {
       <button class="btn secondary small" id="hint-table-tab" role="tab" aria-controls="hint-table" aria-selected="false" tabindex="-1">Gångertabellen</button>
     </div>
     <section id="hint-apples" role="tabpanel" aria-labelledby="hint-apples-tab">
-      <p>${a} ${a === 1 ? 'rad' : 'rader'} med ${b} ${b === 1 ? 'äpple' : 'äpplen'} i varje rad.</p>
-      <div class="hint-apple-grid" aria-hidden="true" style="--apple-columns:${b}">${'<span>🍎</span>'.repeat(a * b)}</div>
+      ${hintGroups(a, b)}
     </section>
     <section id="hint-table" role="tabpanel" aria-labelledby="hint-table-tab" hidden>
       <p>Följ rad ${a} och kolumn ${b} till rutan där de möts.</p>
@@ -1437,6 +1455,27 @@ function showMathHint() {
               row === a || column === b ? ' class="hint-axis"' : ''}>${row * column}</td>`).join('')}</tr>`).join('')}</tbody>
       </table>
     </section>`;
+
+  const countButton = dialog.querySelector('#hint-count');
+  if (countButton) {
+    const baskets = [...dialog.querySelectorAll('.hint-basket')];
+    const totals = dialog.querySelector('.hint-count-totals');
+    let counted = 0;
+    countButton.addEventListener('click', () => {
+      if (counted === baskets.length) {
+        for (const basket of baskets) basket.classList.remove('is-current', 'is-counted');
+        totals.replaceChildren();
+        counted = 0;
+      }
+      baskets[counted - 1]?.classList.remove('is-current');
+      baskets[counted].classList.add('is-current', 'is-counted');
+      counted++;
+      const total = document.createElement('li');
+      total.textContent = counted * b;
+      totals.appendChild(total);
+      countButton.textContent = counted === baskets.length ? 'Räkna igen' : 'Nästa korg';
+    });
+  }
 
   const tabs = Array.from(dialog.querySelectorAll('[role="tab"]'));
   function selectTab(selected) {
