@@ -995,7 +995,9 @@ const BOSS_SKILLS=[
  {name:'Skuggkungens mörker',icon:'🌑',effect:'shadow',description:'Skuggor slukar ljuset omkring dig.'},
  {name:'Magikerns blixt',icon:'⚡',effect:'lightning',description:'Magiska blixtar slår ner.'}
 ];
-const DEFENSE_SECONDS = 5;
+function defenseSeconds() {
+  return 15 - Math.min(10, bestChallengeDiamonds());
+}
 const COMBO_SIZE = 5;
 const COMBO_REWARD = 10;
 
@@ -1088,11 +1090,19 @@ function defenseKey(key) {
   else if (defense.answer.length < 3) defense.answer += key;
   document.getElementById('defense-answer').textContent = defense.answer || '＿';
 }
-function showDefense(){let d=s.pendingDefense;if(!d)return;if(d.deadline===null){d.deadline=Date.now()+DEFENSE_SECONDS*1000;save()}if(Date.now()>=d.deadline){resolveDefense(false);return}if(document.getElementById('defense-modal'))return;
+function showDefense(){let d=s.pendingDefense;if(!d)return;if(d.deadline===null){d.duration=defenseSeconds()*1000;d.deadline=Date.now()+d.duration;save()}const duration=d.duration??5000;if(Date.now()>=d.deadline){resolveDefense(false);return}if(document.getElementById('defense-modal'))return;
  const o=document.createElement('div');o.className='defense-backdrop';o.id='defense-modal';
- o.innerHTML='<div class="defense-box" role="dialog" aria-modal="true"><h2>🛡️ STOPPA BOSSEN!</h2><p>'+escapeHtml(d.icon+' '+d.name)+' · '+DEFENSE_SECONDS+' sekunder!</p><div class="defense-time"><div id="defense-bar"></div></div><div class="math">'+d.a+' × '+d.b+' = ?</div><div class="answer" id="defense-answer">'+escapeHtml(d.answer||'＿')+'</div><div class="defense-keys">'+['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>'<button type="button" data-defense="'+k+'" class="'+(k==='✓'?'submit':'')+'">'+k+'</button>').join('')+'</div></div>';
+ o.innerHTML='<div class="defense-box" role="dialog" aria-modal="true"><h2>🛡️ STOPPA BOSSEN!</h2><p>'+escapeHtml(d.icon+' '+d.name)+' · '+(duration/1000)+' sekunder!</p><div class="defense-time"><div id="defense-bar"></div></div><div class="math">'+d.a+' × '+d.b+' = ?</div><div class="answer" id="defense-answer">'+escapeHtml(d.answer||'＿')+'</div><div class="defense-keys">'+['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>'<button type="button" data-defense="'+k+'" class="'+(k==='✓'?'submit':'')+'">'+k+'</button>').join('')+'</div></div>';
  document.body.appendChild(o);o.addEventListener('click',e=>{let k=e.target.closest('[data-defense]')?.dataset.defense;if(k)defenseKey(k)});
- clearInterval(defenseTimer);defenseTimer=setInterval(()=>{if(!s.pendingDefense){clearInterval(defenseTimer);return}let remain=Math.max(0,s.pendingDefense.deadline-Date.now()),bar=document.getElementById('defense-bar');if(bar)bar.style.width=remain/(DEFENSE_SECONDS*10)+'%';if(!remain)resolveDefense(false)},50);
+ clearInterval(defenseTimer);
+ const bar=o.querySelector('#defense-bar');
+ const tick=()=>{
+  const remain=Math.max(0,d.deadline-Date.now());
+  bar.style.width=100*Math.min(1,remain/duration)+'%';
+  if(!remain)resolveDefense(false);
+ };
+ defenseTimer=setInterval(tick,50);
+ tick();
 }
 function combatFx(kind,attack,damage){const scene=document.getElementById('scene'),fx=document.getElementById('battle-fx');if(!scene||!fx)return;const skill=attack?.effect||'';const element=['stun','curse','quake','thorns','fire','dragon','shadow','lightning'].includes(skill)?skill:'';scene.classList.remove('combat-impact','fx-fire','fx-dragon','fx-lightning','fx-shadow','fx-curse','fx-quake','fx-thorns','fx-stun');void scene.offsetWidth;if(element)scene.classList.add('fx-'+element);scene.classList.add('combat-impact');let icon=kind==='victory'?'🏆 ✨':kind==='guard'?'🛡️ ✨':attack?.icon||(kind==='hero'?'⚔️':'💥');let target=kind==='hero'?'enemy-hit':kind==='victory'?'victory':kind==='guard'?'guard-hit':'hero-hit';fx.innerHTML='<span class="burst '+target+'">'+escapeHtml(icon)+(damage!=null?' −'+damage:'')+'</span>';if(kind!=='victory'&&kind!=='guard'){for(let i=0;i<12;i++){let p=document.createElement('i');p.className='spark';p.style.setProperty('--x',(kind==='hero'?70:24)+'%');p.style.setProperty('--y','54%');p.style.setProperty('--sz',(3+i%4*2)+'px');p.style.setProperty('--dx',((i%4-1.5)*34)+'px');p.style.setProperty('--dy',((Math.floor(i/4)-1)*44)+'px');fx.appendChild(p)}}if(attack?.effect){let t=document.createElement('div');t.className='boss-telegraph';t.textContent=attack.name||'SPECIALATTACK';fx.appendChild(t)}if(kind==='victory')scene.classList.add('victory-glow');}
 function animateCounter(){
@@ -1792,7 +1802,7 @@ function game() {
     intro ? '<p class="hint">Gör dig redo!</p>' :
     fighting && !battle?.move ? `<p class="hint">${escapeHtml(notice || 'Välj din attack för att få en matteuppgift.')}</p>` : questionUIIfReady();
   const advice = fighting ? battle?.boss ?
-    '👑 Blockera bossens motattacker inom 5 sekunder. Vid 0 HP börjar världen om.' :
+    `👑 Blockera bossens motattacker inom ${defenseSeconds()} sekunder. Vid 0 HP börjar världen om.` :
     'Fienden slår tillbaka. Vid 0 HP börjar du om på världen.' :
     'Lös tal för att röra dig framåt. Händelser väntar längs vägen.';
   return `<div class="panel game-panel${activeArena() ? ' arena-panel' : ''}">
@@ -2153,7 +2163,7 @@ document.addEventListener('keydown', event => {
   tableChallengeKey(key === 'Enter' ? '✓' : key === 'Backspace' ? '⌫' : key);
 });
 
-function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2>${challengeSettingsUI()}<p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.22 · Mobilanpassad mobilhöjd · femsekundersblockering och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
+function settings(){return `<div class="panel"><h2 class="title">⚙️ Inställningar och sparning</h2>${challengeSettingsUI()}<p>Progressen sparas automatiskt på denna iPhone, efter varje steg och handling. För säkerhets skull kan du exportera den.</p><div class="actions"><button class="btn secondary" data-action="sound">Ljud: ${s.sound?'På 🔊':'Av 🔇'}</button><button class="btn secondary" data-action="test-sound">🔔 Testa ljud</button><span id="audio-status" class="hint" role="status" aria-live="polite"></span><button class="btn" data-action="export">⬇ Exportera sparfil</button><label class="btn secondary" style="cursor:pointer">⬆ Importera sparfil <input id="import" type="file" accept="application/json,.json" hidden></label></div><p class="hint">Vid byte av iPhone eller rensning av webbplatsdata behöver du importera en tidigare exporterad sparfil.</p><button class="btn secondary small" data-action="reset">Börja om (kräver bekräftelse)</button><p class="steptrack">Version 1.22 · Mobilanpassad mobilhöjd · diamantbaserad blockeringstid och kombobelöningar · iPhone-porträtt och belöningsanimationer · vandring, låsta kistor och tidsblockering · anpassad repetition och framsteg · bossauror och specialljud · levande strider · synlig utrustning och kortdetaljer · samlingsbara kort och utökad smedja · unika bossattacker och motattack vid varje fel · bossfaser och buggfixar · lokal lagring · 8 världar · 50 monsterkort</p></div>`}
 let encounterTimer;
 
 function encounterActive(battle = s.battle) {
