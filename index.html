@@ -932,6 +932,15 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .adventure-intro-dialog label { display: flex; align-items: center; gap: 6px; min-height: 36px }
 .adventure-intro-dialog small { color: #ded5b7 }
 .adventure-intro-dialog .btn { justify-self: start; margin-top: 4px }
+.game-modal-backdrop.challenge-celebrating { align-items: end; background: #07111977 }
+.challenge-celebrating .modal { width: auto; text-align: center }
+.challenge-celebrating h2 { margin: 0 0 8px; font-size: 22px }
+.challenge-fireworks { position: fixed; inset: 0; z-index: 1200; overflow: hidden; pointer-events: none }
+.challenge-fireworks > span { position: absolute; opacity: 0; pointer-events: none }
+.challenge-rocket { width: 5px; height: 22px; border-radius: 6px; background: #fff0bd; box-shadow: 0 0 12px 3px #ffc95c }
+.challenge-confetti { width: 6px; height: 9px; border-radius: 1px }
+.challenge-confetti:nth-child(3n) { width: 8px; height: 8px; border-radius: 50% }
+.challenge-flying-diamond { font-size: clamp(46px, 13vw, 86px); line-height: 1; filter: drop-shadow(0 0 14px #64cfff) }
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -1319,9 +1328,8 @@ function fitGameViewport(){
 }
 let collectingVictory = null;
 
-function renderHud(progress = collectingVictory || s.event?.reward?.before || s) {
+function renderHud(progress = collectingVictory || s.event?.reward?.before || s, diamonds = bestChallengeDiamonds()) {
   const hud = document.getElementById('hud');
-  const diamonds = bestChallengeDiamonds();
   hud.innerHTML = `<span id="hud-level">Nivå ${escapeHtml(progress.level)}</span>
     <span id="hud-gold">🪙 ${escapeHtml(progress.gold)}</span>
     <span id="hud-xp">⭐ ${escapeHtml(progress.xp)} XP</span>
@@ -2137,6 +2145,90 @@ function startTableChallenge() {
   showTableChallenge();
 }
 
+async function celebrateChallenge(result, previousBest) {
+  const count = Math.min(10, result.diamonds);
+  const dialog = challengeDialog('Bra räknat!', `
+    <button class="btn secondary small" type="button" id="challenge-skip-animation">Visa resultat</button>`);
+  dialog.classList.add('challenge-celebrating');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'challenge-fireworks';
+  overlay.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(overlay);
+
+  function showResult() {
+    overlay.getAnimations({ subtree: true }).forEach(animation => animation.cancel());
+    overlay.remove();
+    renderHud();
+    showChallengeResult(result);
+  }
+
+  dialog.querySelector('#challenge-skip-animation').onclick = showResult;
+  const launchDuration = 380;
+  const palette = ['#ffd77a', '#7de5fc', '#f899bd', '#b8eb9b', '#dcb3ff', '#fff0ce'];
+  const width = overlay.clientWidth;
+  const height = overlay.clientHeight;
+
+  function piece(className, x, y) {
+    const element = document.createElement('span');
+    element.className = className;
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
+    overlay.appendChild(element);
+    return element;
+  }
+
+  function animatePiece(element, frames, duration, delay = 0) {
+    const animation = element.animate(frames, { duration, delay, easing: 'linear' });
+    return animation.finished.catch(() => {}).then(() => element.remove());
+  }
+
+  const bursts = Array.from({ length: count }, (_, index) => {
+    const x = width * (index === 0 ? .5 : .22 + (index * .37 % .56));
+    const y = height * (.19 + index % 3 * .075);
+    const delay = index * 1000;
+    const rocket = piece('challenge-rocket', x, y);
+    const launch = animatePiece(rocket, [
+      { opacity: 1, transform: `translateY(${height - y}px) scale(.65)` },
+      { opacity: 1, transform: 'translateY(0) scale(1)' }
+    ], launchDuration, delay);
+    const fallDuration = index === 0 ? 3000 : 4000;
+    const confetti = Array.from({ length: 30 }, (_, i) => {
+      const element = piece('challenge-confetti', x, y);
+      element.style.background = palette[(i + index * 2) % palette.length];
+      const angle = i * Math.PI * 2 / 30;
+      const radius = (45 + Math.random() * 90) * Math.min(1, width / 440);
+      const dx = Math.cos(angle) * radius;
+      const dy = Math.sin(angle) * radius;
+      const spin = (i % 2 ? 1 : -1) * (240 + i * 18);
+      return animatePiece(element, [
+        { opacity: 1, transform: 'translate(0, 0) scale(.5)' },
+        { offset: .18, opacity: 1, transform: `translate(${dx}px, ${dy}px) rotate(${spin / 3}deg)` },
+        { offset: .83, opacity: 1, transform: `translate(${dx * 1.45}px, ${(height - y) * .82}px) rotate(${spin * .8}deg)` },
+        { opacity: 0, transform: `translate(${dx * 1.6}px, ${height - y + 14}px) rotate(${spin}deg)` }
+      ], fallDuration, delay + launchDuration);
+    });
+    return Promise.all([launch, ...confetti]);
+  });
+
+  await Promise.all(bursts);
+  for (let number = 1; number <= count && overlay.isConnected; number++) {
+    const target = document.getElementById('hud-diamonds').getBoundingClientRect();
+    const x = overlay.clientWidth / 2;
+    const y = overlay.clientHeight * .43;
+    const diamond = piece('challenge-flying-diamond', x, y);
+    diamond.textContent = '💎';
+    await animatePiece(diamond, [
+      { opacity: 0, transform: 'translate(-50%, -50%) scale(.25)' },
+      { offset: .36, opacity: 1, transform: 'translate(-50%, -50%) scale(1.37)' },
+      { offset: .57, opacity: 1, transform: 'translate(-50%, -50%) scale(1.15)' },
+      { opacity: .85, transform: `translate(-50%, -50%) translate(${target.left + target.width / 2 - x}px, ${target.top + target.height / 2 - y}px) scale(.25)` }
+    ], 850);
+    if (overlay.isConnected) renderHud(s, Math.max(previousBest, number));
+  }
+  if (overlay.isConnected) showResult();
+}
+
 function finishTableChallenge(reason) {
   const round = s.tableChallenge;
   if (!round) return;
@@ -2145,12 +2237,17 @@ function finishTableChallenge(reason) {
   const result = { tables, total, correct, wrong, startedAt, reason,
     elapsed: Math.min(CHALLENGE_MS, Math.max(0, Date.now() - startedAt)),
     diamonds: Math.floor(correct / 10) };
+  const previousBest = bestChallengeDiamonds();
   s.challengeHistory.push(result);
   s.tableChallenge = null;
   s.event = { type: 'challenge-result', result };
   save();
-  renderHud();
-  showChallengeResult(result);
+  if (result.diamonds > 0 && reason !== 'Avbruten' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    celebrateChallenge(result, previousBest);
+  } else {
+    renderHud();
+    showChallengeResult(result);
+  }
 }
 
 function showChallengeResult(result) {
