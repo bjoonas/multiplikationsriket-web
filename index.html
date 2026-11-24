@@ -1652,18 +1652,12 @@ function game() {
   </div>`;
 }
 function questionUIIfReady(){return s.event||s.pendingDefense||s.gearChallenge||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
-function forgeUnlockRequirements(item) {
-  const requirements = [];
-  if (item.world > 0 && !s.cleared.includes(item.world - 1)) {
-    requirements.push('Besegra ' + WORLDS[item.world - 1].boss);
-  }
-  const club = item.price ? FORGE_CLUB_REQUIREMENTS[item.world] : 0;
-  if (bestChallengeDiamonds() * 10 < club) requirements.push(club + '-klubben');
-  return requirements;
+function forgeClubRequirement(item) {
+  return item.price ? FORGE_CLUB_REQUIREMENTS[item.world] : 0;
 }
 
 function itemAvailable(item) {
-  return item.forge && forgeUnlockRequirements(item).length === 0;
+  return item.forge && bestChallengeDiamonds() * 10 >= forgeClubRequirement(item);
 }
 
 function changeEquipment(slot, id) {
@@ -1720,14 +1714,14 @@ function shop() {
     ${gearPicker()}
     <div class="grid wardrobe-stock">${FORGE_ITEMS.filter(item => item.slot === selectedGearSlot).map(item => {
       const owned = s.inventory.includes(item.id);
-      const requirements = forgeUnlockRequirements(item);
+      const available = itemAvailable(item);
       return `<div class="shopitem">
         <div class="art">${gearThumbnail(item)}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
         <small>${item.look === 'training' ? 'Läder · ' : ''}${owned ? 'Ägd' : item.price ? item.price + ' guld' : 'Gratis'}</small>
-        ${requirements.length && !owned ? `<small class="shop-unlock">Krav: ${escapeHtml(requirements.join(' · '))}</small>` : ''}
+        ${!available && !owned ? `<small class="shop-unlock">Krav: ${forgeClubRequirement(item)}-klubben</small>` : ''}
         <div class="actions">
           <button class="btn secondary small" data-try-item="${item.id}" aria-pressed="${draft[item.slot] === item.id}">${draft[item.slot] === item.id ? 'Provas' : 'Prova'}</button>
-          ${owned ? '' : `<button class="btn small" data-buy="${item.id}" ${requirements.length || s.gold < item.price ? 'disabled' : ''}>${item.price ? 'Köp' : 'Hämta'}</button>`}
+          ${owned ? '' : `<button class="btn small" data-buy="${item.id}" ${!available || s.gold < item.price ? 'disabled' : ''}>${item.price ? 'Köp' : 'Hämta'}</button>`}
         </div></div>`;
     }).join('')}</div>
     <div class="shop-guide">
