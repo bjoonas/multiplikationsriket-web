@@ -899,11 +899,13 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   text-align: center;
   font-size: clamp(16px, 5vw, 27px);
 }
+.hint-reveal { display: flex; align-items: center; gap: 6px; min-height: 36px; margin-bottom: 4px }
+.hint-reveal input { accent-color: #ecc982 }
 .hint-times-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; font-size: clamp(10px, 3vw, 15px); font-variant-numeric: tabular-nums }
 .hint-times-table :is(td, th) { padding: 4px 0; border: 1px solid #536753 }
 .hint-times-table th { background: #253e33; color: #ffe4a1 }
-.hint-times-table .hint-axis { background: #40553b }
-.hint-times-table .hint-product { background: #ecc982; color: #261e14; font-weight: bold }
+#hint-table:has(#hint-reveal:checked) .hint-times-table .hint-axis { background: #40553b }
+#hint-table:has(#hint-reveal:checked) .hint-times-table .hint-product { background: #ecc982; color: #261e14; font-weight: bold }
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -1425,6 +1427,7 @@ function showMathHint() {
     </section>
     <section id="hint-table" role="tabpanel" aria-labelledby="hint-table-tab" hidden>
       <p>Följ rad ${a} och kolumn ${b} till rutan där de möts.</p>
+      <label class="hint-reveal"><input id="hint-reveal" type="checkbox"> Visa mig</label>
       <table class="hint-times-table" aria-label="Gångertabell 1 till 10">
         <thead><tr><th scope="col">×</th>${CHALLENGE_TABLES.map(column =>
           `<th scope="col"${column === b ? ' class="hint-axis"' : ''}>${column}</th>`).join('')}</tr></thead>
