@@ -891,6 +891,7 @@ const ITEMS = [
 ];
 
 const FORGE_ITEMS = ITEMS.filter(item => item.forge);
+const FORGE_CLUB_REQUIREMENTS = [20, 30, 40, 50, 60, 80];
 const GEAR_SLOTS = [
   ['armor', 'Rustning'], ['weapon', 'Svärd'], ['helmet', 'Hjälm'], ['shield', 'Sköld']
 ];
@@ -1651,8 +1652,18 @@ function game() {
   </div>`;
 }
 function questionUIIfReady(){return s.event||s.pendingDefense||s.gearChallenge||s.phase==='battle'&&!s.battle?.move?'':questionUI()}
+function forgeUnlockRequirements(item) {
+  const requirements = [];
+  if (item.world > 0 && !s.cleared.includes(item.world - 1)) {
+    requirements.push('Besegra ' + WORLDS[item.world - 1].boss);
+  }
+  const club = item.price ? FORGE_CLUB_REQUIREMENTS[item.world] : 0;
+  if (bestChallengeDiamonds() * 10 < club) requirements.push(club + '-klubben');
+  return requirements;
+}
+
 function itemAvailable(item) {
-  return item.forge && (item.world === 0 || s.cleared.includes(item.world - 1));
+  return item.forge && forgeUnlockRequirements(item).length === 0;
 }
 
 function changeEquipment(slot, id) {
@@ -1705,18 +1716,18 @@ function shop() {
     <div class="top"><h2 class="title">⚒️ Smedjan · 🪙 ${s.gold}</h2>
       <button class="btn secondary" data-nav="inventory">🎒 Inventarie</button></div>
     ${wardrobePreview(draft, true)}
-    <p class="wardrobe-stock-status">${FORGE_ITEMS.filter(itemAvailable).length} upplåsta delar av ${FORGE_ITEMS.length} · Köp sparas i inventariet.</p>
+    <p class="wardrobe-stock-status">${FORGE_ITEMS.filter(itemAvailable).length} upplåsta delar av ${FORGE_ITEMS.length} · Klubbnivån räknas från din bästa runda.</p>
     ${gearPicker()}
     <div class="grid wardrobe-stock">${FORGE_ITEMS.filter(item => item.slot === selectedGearSlot).map(item => {
       const owned = s.inventory.includes(item.id);
-      const available = itemAvailable(item);
+      const requirements = forgeUnlockRequirements(item);
       return `<div class="shopitem">
         <div class="art">${gearThumbnail(item)}</div><strong>${item.name}</strong><div>${itemStats(item)}</div>
         <small>${item.look === 'training' ? 'Läder · ' : ''}${owned ? 'Ägd' : item.price ? item.price + ' guld' : 'Gratis'}</small>
-        ${!available && !owned ? `<small class="shop-unlock">Besegra ${WORLDS[item.world - 1].boss} för att låsa upp</small>` : ''}
+        ${requirements.length && !owned ? `<small class="shop-unlock">Krav: ${escapeHtml(requirements.join(' · '))}</small>` : ''}
         <div class="actions">
           <button class="btn secondary small" data-try-item="${item.id}" aria-pressed="${draft[item.slot] === item.id}">${draft[item.slot] === item.id ? 'Provas' : 'Prova'}</button>
-          ${owned ? '' : `<button class="btn small" data-buy="${item.id}" ${!available || s.gold < item.price ? 'disabled' : ''}>${item.price ? 'Köp' : 'Hämta'}</button>`}
+          ${owned ? '' : `<button class="btn small" data-buy="${item.id}" ${requirements.length || s.gold < item.price ? 'disabled' : ''}>${item.price ? 'Köp' : 'Hämta'}</button>`}
         </div></div>`;
     }).join('')}</div>
     <div class="shop-guide">
