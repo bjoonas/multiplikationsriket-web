@@ -63,7 +63,7 @@
 
 /* v0.9: learning progress */
 .mastery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}.mastery-tile{padding:12px;border:1px solid #746b56;border-radius:11px;background:#182735}.mastery-tile h3{margin:0 0 6px;color:#f0d393}.mastery-tile small{color:#c0ccd0}.fact-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:9px}.fact{padding:5px 2px;border-radius:5px;text-align:center;background:#293643;border:1px solid #586477;font-size:12px}.fact.known{background:#224838;border-color:#5aa77c}.fact.learning{background:#52462d;border-color:#b99755}.fact.weak{background:#58332e;border-color:#c77c62}.mastery-banner{margin:10px 0;padding:10px;border:1px solid #d0a85f;border-radius:10px;background:#3a3024}.mastery-tile .progress{margin:8px 0}
-.scene.travel-moving .scene-bg{animation:pan .9s ease-out}.scene.travel-moving .hero{animation:stride .9s ease-in-out!important}.scene.travel-moving .hero-visual{animation:bob .22s ease-in-out 4}.travel-progress{position:absolute;left:5%;right:5%;bottom:4%;height:6px;background:#142333;border-radius:6px}.travel-progress>div{height:100%;background:#f0c776;transition:width .8s}.travel-marker{position:absolute;right:12%;bottom:15%;font-size:36px}.defense-backdrop{position:fixed;inset:0;z-index:300;background:#08111de9;display:grid;place-items:center;padding:8px}.defense-box{width:min(540px,98vw);max-height:98vh;overflow:auto;border:2px solid #dcb16c;border-radius:14px;background:#243749;padding:12px;text-align:center}.defense-time{height:9px;background:#5b2730;border-radius:8px;overflow:hidden;margin:8px}.defense-time>div{height:100%;background:#80d9a2;width:100%}.defense-keys{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.defense-keys button{padding:10px 2px;background:#3b5873;color:white;border:1px solid #91a4b8;border-radius:7px}.defense-keys .submit{background:#548c68}@keyframes pan{from{transform:scale(1.14) translateX(5%)}to{transform:scale(1) translateX(-2%)}}@keyframes stride{from{transform:translateX(-50px) translateY(0)}45%{transform:translateX(0) translateY(-14px)}to{transform:translateX(0)}}@keyframes bob{50%{transform:translateY(-8px) rotate(4deg)}}@media(prefers-reduced-motion:reduce){.scene.travel-moving .scene-bg,.scene.travel-moving .hero,.scene.travel-moving .hero-visual{animation:none!important}}
+.scene.travel-moving .scene-bg{animation:pan .9s ease-out}.scene.travel-moving .hero{animation:stride .9s ease-in-out!important}.scene.travel-moving .hero-visual{animation:bob .22s ease-in-out 4}.travel-progress{position:absolute;left:5%;right:5%;bottom:4%;height:6px;background:#142333;border-radius:6px}.travel-progress>div{height:100%;background:#f0c776;transition:width .8s}.travel-marker{position:absolute;right:12%;bottom:15%;font-size:36px}.defense-backdrop{position:fixed;inset:0;z-index:300;background:#08111de9;display:grid;place-items:center;padding:8px}.defense-box{width:min(540px,98vw);max-height:98vh;overflow:auto;border:2px solid #dcb16c;border-radius:14px;background:#243749;padding:12px;text-align:center}.defense-time{height:9px;background:#5b2730;border-radius:8px;overflow:hidden;margin:8px}.defense-time>div{height:100%;background:#80d9a2;width:100%}@keyframes pan{from{transform:scale(1.14) translateX(5%)}to{transform:scale(1) translateX(-2%)}}@keyframes stride{from{transform:translateX(-50px) translateY(0)}45%{transform:translateX(0) translateY(-14px)}to{transform:translateX(0)}}@keyframes bob{50%{transform:translateY(-8px) rotate(4deg)}}@media(prefers-reduced-motion:reduce){.scene.travel-moving .scene-bg,.scene.travel-moving .hero,.scene.travel-moving .hero-visual{animation:none!important}}
 /* v1.1: iPhone 16 landscape compact gameplay. Safe-area aware, no fixed pixel heights. */
 @media (orientation:landscape) and (max-height:520px) and (max-width:1000px){
  html,body{width:100%;min-height:100%;overflow-x:hidden}
@@ -93,7 +93,7 @@
  .modal,.defense-box{padding:8px;max-height:96dvh;overflow:auto}
  .modal h2,.defense-box h2{font-size:18px;margin:2px 0}
  .defense-box p{margin:3px}.defense-box .math{font-size:25px}
- .defense-keys{gap:3px}.defense-keys button{padding:5px 2px;font-size:14px}
+
  .defense-box .answer{min-height:27px}
  .hero-banner{height:60px}.hero-banner img{height:85px}
 }
@@ -135,8 +135,8 @@
  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
  .world{padding:8px}.world .icon{font-size:26px}.world small{font-size:10px}
  .defense-box{width:100%;max-height:calc(100dvh - 24px);padding:12px}
- .defense-box h2{font-size:20px}.defense-keys{grid-template-columns:repeat(3,1fr);gap:6px}
- .defense-keys button{min-height:40px;font-size:20px}.defense-box .math{font-size:34px}
+ .defense-box h2{font-size:20px}
+ .defense-box .math{font-size:34px}
  .game-modal-backdrop{padding:12px}.modal{padding:13px;max-height:90dvh;overflow:auto}
 }
 @media(orientation:landscape) and (min-width:1001px){.app{max-width:1150px}.scene{height:clamp(220px,40vh,390px)}}
@@ -184,13 +184,13 @@
  .question .answer{min-height:34px}
  .defense-backdrop,.game-modal-backdrop{padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
  .defense-box{max-height:calc(var(--visible-height,100dvh) - 20px);overflow-y:auto;overscroll-behavior:contain}
- .defense-keys button{min-height:44px}
+
 }
 @media(orientation:portrait) and (max-width:650px) and (max-height:740px){
  .scene{height:clamp(90px,15dvh,120px)}
  .keypad button{height:40px;min-height:40px}
  .defense-box{padding:8px}.defense-box h2{font-size:18px;margin:3px 0}
- .defense-keys{gap:4px}.defense-keys button{min-height:40px}
+
 }
 @media(orientation:landscape) and (max-height:520px) and (max-width:1000px){
  .app{padding-top:4px}.scene{height:clamp(125px,43dvh,200px)}
@@ -281,7 +281,7 @@
 }
 body.playing{height:var(--visible-height,100dvh);max-height:var(--visible-height,100dvh);overflow-y:hidden;overscroll-behavior-y:none}
 body.playing .app{height:100%;max-height:100%;overflow:hidden;display:flex;flex-direction:column}
-body.playing #main{flex:1;min-height:0;overflow:hidden}
+body.playing #main{flex:1;min-height:0;overflow-y:auto}
 body.playing .foot{display:none}
 body.playing .game-panel{transform-origin:top left;box-sizing:border-box;max-width:100%}
 body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
@@ -502,13 +502,13 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .game-panel.arena-panel {
   background: linear-gradient(154deg, #263b37, #122322 70%);
 }
-.arena-panel .keypad button { font-size: 21px; min-height: 44px }
-.arena-panel .controls .question .math { font-size: clamp(25px, 8vw, 44px) }
+.keypad button { font-size: 21px; min-height: 44px }
+.game-panel .controls .question .math { font-size: clamp(21px, 6.1vw, 40px) }
 .arena-panel .actions > .btn { min-height: 44px }
 .arena-panel .actions > .btn:not(.secondary),
-.arena-panel .keypad .go { color: #241903; background: linear-gradient(#f9da89, #ce9a4a); border-color: #f8d784 }
-.arena-panel .keypad { background: #102824; border-color: #54705d }
-.arena-panel .keypad button:not(.go) { background: #30544a; border-color: #6f9481 }
+.keypad .go { color: #241903; background: linear-gradient(#f9da89, #ce9a4a); border-color: #f8d784 }
+.keypad { background: #102824; border-color: #54705d }
+.keypad button:not(.go) { background: #30544a; border-color: #6f9481 }
 .arena-panel .message { overflow-wrap: anywhere }
 
 @keyframes arena-drift {
@@ -530,7 +530,6 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
   to { opacity: 0; transform: scaleX(-1) translateY(12%) rotate(13deg) }
 }
 
-.playing.layered-battle #main { overflow-y: auto }
 @media (orientation: portrait) and (max-width: 650px) {
   .game-panel.arena-panel { display: flex; flex-direction: column; min-height: 100% }
   .game-panel.arena-panel .scene.layered-arena {
@@ -539,23 +538,22 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
     min-height: 190px !important;
     max-height: none !important;
   }
-  .arena-panel .controls {
+  .game-panel .controls {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 8px;
     align-items: start;
   }
-  .arena-panel .controls .question { align-self: center; gap: 5px }
+  .game-panel .controls .question { align-self: center; gap: 5px }
   .arena-panel .question .steptrack { display: none }
-  .arena-panel .question .answer { font-size: 24px; min-height: 36px }
   .arena-panel .question .message { max-height: none }
-  .arena-panel .keypad button { height: 44px }
+  .keypad button { height: 44px }
   .game-panel.arena-panel > .actions { gap: 6px }
   .game-panel.arena-panel > .actions .btn { flex: 1; min-width: 0; padding-inline: 4px }
 }
 @media (orientation: portrait) and (max-width: 650px) and (max-height: 620px) {
   .layered-battle .nav button { min-height: 28px; padding-block: 4px }
-  .game-panel.arena-panel { padding: 6px }
+  .game-panel { padding: 6px }
   .game-panel.arena-panel > .top { margin-bottom: 4px }
   .game-panel.arena-panel .scene.layered-arena {
     flex-basis: 158px;
@@ -846,7 +844,9 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .challenge-dialog { max-height: 92dvh; overflow: auto }
 .challenge-status { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums }
 .challenge-dialog .math, .challenge-dialog .answer { text-align: center }
-.challenge-dialog .defense-keys button { min-height: 44px }
+.defense-box .keypad, .challenge-dialog .keypad { position: relative; bottom: auto }
+.math .equation-answer { color: #ffe4a1; font-variant-numeric: tabular-nums }
+.game-panel .math { white-space: nowrap }
 #challenge-feedback { min-height: 1.3em; margin: 4px 0 }
 #challenge-stop { margin-top: 10px }
 .keypad.timed-strike-keypad { margin-top: 7px }
@@ -1107,11 +1107,16 @@ function defenseKey(key) {
   }
   if (key === '⌫') defense.answer = defense.answer.slice(0, -1);
   else if (defense.answer.length < 3) defense.answer += key;
-  document.getElementById('defense-answer').textContent = defense.answer || '＿';
+  document.getElementById('defense-answer').textContent = defense.answer || '?';
 }
 function showDefense(){let d=s.pendingDefense;if(!d)return;if(d.deadline===null){d.duration=defenseSeconds()*1000;d.deadline=Date.now()+d.duration;save()}const duration=d.duration??5000;if(Date.now()>=d.deadline){resolveDefense(false);return}if(document.getElementById('defense-modal'))return;
  const o=document.createElement('div');o.className='defense-backdrop';o.id='defense-modal';
- o.innerHTML='<div class="defense-box" role="dialog" aria-modal="true"><h2>🛡️ STOPPA BOSSEN!</h2><p>'+escapeHtml(d.icon+' '+d.name)+' · '+(duration/1000)+' sekunder!</p><div class="defense-time"><div id="defense-bar"></div></div><div class="math">'+d.a+' × '+d.b+' = ?</div><div class="answer" id="defense-answer">'+escapeHtml(d.answer||'＿')+'</div><div class="defense-keys">'+['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>'<button type="button" data-defense="'+k+'" class="'+(k==='✓'?'submit':'')+'">'+k+'</button>').join('')+'</div></div>';
+ o.innerHTML=`<div class="defense-box" role="dialog" aria-modal="true">
+  <h2>🛡️ STOPPA BOSSEN!</h2><p>${escapeHtml(d.icon + ' ' + d.name)} · ${duration / 1000} sekunder!</p>
+  <div class="defense-time"><div id="defense-bar"></div></div>
+  <div class="math">${equation(d.a, d.b, d.answer, 'defense-answer')}</div>
+  ${numberPad('defense')}
+ </div>`;
  document.body.appendChild(o);o.addEventListener('click',e=>{let k=e.target.closest('[data-defense]')?.dataset.defense;if(k)defenseKey(k)});
  clearInterval(defenseTimer);
  const bar=o.querySelector('#defense-bar');
@@ -1310,11 +1315,7 @@ function fitGameViewport(){
  const playing=screen==='game';document.body.classList.toggle('playing',playing);
  document.body.classList.toggle('home-screen',screen==='home');
  const layered=playing&&!!activeArena();document.body.classList.toggle('layered-battle',layered);
- const panel=document.querySelector('.game-panel');if(!playing||!panel)return;
- panel.style.zoom='1';panel.style.width='100%';
- if(layered)return;
- const main=document.getElementById('main'),available=main.clientHeight,needed=panel.scrollHeight;
- if(available>0&&needed>available){const scale=Math.max(.55,Math.min(1,available/needed));panel.style.zoom=String(scale);panel.style.width='100%'}
+
 }
 let collectingVictory = null;
 
@@ -1472,7 +1473,35 @@ function comboMeter() {
   </div>`;
 }
 
-function questionUI(){if(!s.question)chooseQuestion();let q=s.question;const timedStrike=s.battle?.doubleDeadline;return `<div class="controls"><div class="question"><div class="steptrack">${s.battle?.doubleDeadline ? `Dubbelslag ${s.battle.pending + 1}/2 · <span id="double-time">${doubleSecondsLeft(s.battle)} s</span>` : s.phase==='battle'?'⚔️ STRID':'👣 ETT RÄTT SVAR = ETT STEG'}</div><div class="math">${q.a} × ${q.b} = ?</div><div class="answer">${escapeHtml(s.answer)||'＿'}</div><div class="message" id="message">${escapeHtml(notice)}</div><button class="btn secondary small" data-action="hint">💡 Ledtråd</button></div><div class="keypad${timedStrike ? ' timed-strike-keypad' : ''}">${timedStrike ? doubleStrikeBar(s.battle) : ''}${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-key="${k}">${k}</button>`).join('')}</div></div>`}
+function numberPad(attribute, timedStrike) {
+  const keys = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
+  return `<div class="keypad${timedStrike ? ' timed-strike-keypad' : ''}">
+    ${timedStrike ? doubleStrikeBar(timedStrike) : ''}${keys.map(key =>
+      `<button type="button"${key === '✓' ? ' class="go" aria-label="Svara"' :
+        key === '⌫' ? ' aria-label="Sudda"' : ''} data-${attribute}="${key}">${key}</button>`).join('')}
+  </div>`;
+}
+
+function equation(a, b, answer, answerId = '') {
+  return `${escapeHtml(a)} × ${escapeHtml(b)} = <span class="equation-answer"${answerId ? ` id="${answerId}"` : ''}>${escapeHtml(answer || '?')}</span>`;
+}
+
+function questionUI() {
+  if (!s.question) chooseQuestion();
+  const { a, b } = s.question;
+  const timedStrike = s.battle?.doubleDeadline ? s.battle : null;
+  const label = timedStrike ? `Dubbelslag ${timedStrike.pending + 1}/2 · <span id="double-time">${doubleSecondsLeft(timedStrike)} s</span>` :
+    s.phase === 'battle' ? '⚔️ STRID' : '👣 ETT RÄTT SVAR = ETT STEG';
+  return `<div class="controls">
+    <div class="question">
+      <div class="steptrack">${label}</div>
+      <div class="math">${equation(a, b, s.answer)}</div>
+      <div class="message" id="message">${escapeHtml(notice)}</div>
+      <button class="btn secondary small" data-action="hint">💡 Ledtråd</button>
+    </div>
+    ${numberPad('key', timedStrike)}
+  </div>`;
+}
 function hintGroups(a, b) {
   const useBaskets = a * b > 24;
   if (!useBaskets) {
@@ -2156,15 +2185,14 @@ function tableChallengeKey(key) {
   if (key === '⌫') round.answer = round.answer.slice(0, -1);
   else if (round.answer.length < 3) round.answer += key;
   save();
-  document.getElementById('challenge-answer').textContent = round.answer || '＿';
+  document.getElementById('challenge-answer').textContent = round.answer || '?';
 }
 
 function updateTableChallenge() {
   const round = s.tableChallenge;
   const [a, b] = round.queue[0];
-  document.getElementById('challenge-fact').textContent = `${a} × ${b} = ?`;
+  document.getElementById('challenge-fact').innerHTML = equation(a, b, round.answer, 'challenge-answer');
   document.getElementById('challenge-score').textContent = `${round.correct} av ${round.total} rätt`;
-  document.getElementById('challenge-answer').textContent = round.answer || '＿';
   document.getElementById('challenge-feedback').textContent = round.feedback;
 }
 
@@ -2175,10 +2203,9 @@ function showTableChallenge() {
   const dialog = challengeDialog('Gångertabellsutmaning', `
     <div class="challenge-status"><strong id="challenge-score"></strong>
     <strong id="challenge-time" role="timer">${challengeTime(round.deadline - Date.now())}</strong></div>
-    <div class="math" id="challenge-fact" aria-live="polite"></div><div class="answer" id="challenge-answer"></div>
+    <div class="math" id="challenge-fact" aria-live="polite"></div>
     <p id="challenge-feedback" class="hint" role="status"></p>
-    <div class="defense-keys">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(key =>
-      `<button type="button" data-challenge-key="${key}" class="${key === '✓' ? 'submit' : ''}">${key}</button>`).join('')}</div>
+    ${numberPad('challenge-key')}
     <button class="btn secondary small" id="challenge-stop">Avsluta rundan</button>`);
   dialog.addEventListener('click', event => {
     const key = event.target.closest('[data-challenge-key]')?.dataset.challengeKey;
@@ -2429,7 +2456,7 @@ function gearKey(key) {
   } else {
     if (key === '⌫') challenge.answer = challenge.answer.slice(0,-1);
     else if (challenge.answer.length < 3) challenge.answer += key;
-    document.getElementById('gear-answer').textContent = challenge.answer || '＿';
+    document.getElementById('gear-answer').textContent = challenge.answer || '?';
   }
   save();
 }
@@ -2437,8 +2464,8 @@ function gearKey(key) {
 function updateGearChallenge(feedback = '') {
   const challenge = s.gearChallenge;
   document.getElementById('gear-correct').textContent = challenge.correct + '/' + GEAR_QUESTIONS + ' rätt';
-  document.getElementById('gear-question').textContent = challenge.question.a + ' × ' + challenge.question.b + ' = ?';
-  document.getElementById('gear-answer').textContent = challenge.answer || '＿';
+  const { a, b } = challenge.question;
+  document.getElementById('gear-question').innerHTML = equation(a, b, challenge.answer, 'gear-answer');
   document.getElementById('gear-feedback').textContent = feedback;
 }
 
@@ -2457,9 +2484,8 @@ function showGearChallenge() {
     <h2 id="gear-title">${item.art} ${item.name}</h2>
     <p><strong id="gear-correct"></strong> · <span id="gear-seconds"></span> sek kvar</p>
     <div class="defense-time" aria-hidden="true"><div id="gear-bar"></div></div>
-    <div class="math" id="gear-question"></div><div class="answer" id="gear-answer"></div>
-    <div class="defense-keys">${['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(key =>
-      `<button type="button" data-gear-key="${key}" class="${key === '✓' ? 'submit' : ''}">${key}</button>`).join('')}</div>
+    <div class="math" id="gear-question"></div>
+    ${numberPad('gear-key')}
     <p id="gear-feedback" role="status"></p>
   </div>`;
   document.body.appendChild(modal);
