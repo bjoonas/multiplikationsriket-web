@@ -326,9 +326,10 @@ function connectAchievementSharing(dialog, result) {
     share.disabled = false;
   }).catch(() => { status.textContent = 'Bilden kunde inte skapas. Resultattexten går att kopiera.'; });
   share.onclick = async () => {
-    if (file && navigator.share && navigator.canShare?.({ files: [file] })) {
+    const data = file && { files: [file], title: 'Multiplikationsriket', url: PUBLIC_GAME_URL };
+    if (data && navigator.share && navigator.canShare?.(data)) {
       try {
-        await navigator.share({ files: [file], title: 'Multiplikationsriket' });
+        await navigator.share(data);
         return;
       } catch (error) {
         if (error.name === 'AbortError') return;
