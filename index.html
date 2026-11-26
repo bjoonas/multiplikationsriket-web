@@ -954,6 +954,9 @@ body.playing #main{width:100%;max-width:100%;box-sizing:border-box}
 .achievement-dialog textarea { width: 100%; min-height: 90px; color: #fff0ce; background: #172922 }
 .install-options { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px }
 .install-options label { min-height: 36px; display: flex; align-items: center; gap: 4px }
+.challenge-history-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px }
+.challenge-history-heading h3 { margin: 0; overflow-wrap: anywhere; font-size: clamp(13px, 3.8vw, 1.17em) }
+.challenge-history-heading .btn { padding-inline: 6px; white-space: nowrap }
 </style></head><body><div class="portrait">📱 ↻<br>Vrid din iPhone till liggande läge för att spela!</div><div class="app"><div class="top"><div class="pill" id="hud">Nivå 1 · 🪙 0</div></div><div class="nav" id="nav"></div><main id="main"></main><div class="foot">Allt sparas på denna enhet. Exportera en säkerhetskopia i Inställningar. Inga köp med riktiga pengar.</div></div><script src="assets/features.js"></script><script>
 'use strict';
 const WORLDS=[{n:2,name:'Riddarskolan',emoji:'🏰',boss:'Goblinkungen',bossArt:'👹',hard:[7,8,9]},{n:3,name:'Skelettborgen',emoji:'💀',boss:'Benkaptenen',bossArt:'☠️',hard:[7,8,9]},{n:4,name:'Bergsfästningen',emoji:'⛰️',boss:'Stengolemen',bossArt:'🗿',hard:[7,8,9]},{n:5,name:'Trollskogen',emoji:'🌲',boss:'Mossatrollet',bossArt:'👺',hard:[7,8,9]},{n:6,name:'Eldbergen',emoji:'🌋',boss:'Eldjätten',bossArt:'🔥',hard:[7,8,9]},{n:7,name:'Drakens dal',emoji:'🐉',boss:'Drakfursten',bossArt:'🐲',hard:[6,8,9]},{n:8,name:'Skuggornas borg',emoji:'🌑',boss:'Skuggkungen',bossArt:'🧟',hard:[6,7,9]},{n:9,name:'Trollkarlens torn',emoji:'🔮',boss:'Mörkermagikern',bossArt:'🧙',hard:[6,7,8]}];
@@ -2099,7 +2102,11 @@ function bestChallengeDiamonds() {
 function challengeHistoryUI() {
   const rounds = s.challengeHistory;
   const best = bestChallengeDiamonds();
-  return `<section class="challenge-section"><h3>Gångertabellsutmaning</h3>
+  return `<section class="challenge-section">
+    <div class="challenge-history-heading">
+      <h3>Gångertabellsutmaning</h3>
+      <button class="btn secondary small" type="button" data-nav="challenge">Till utmaningen</button>
+    </div>
     <p>Bästa runda · ${best} av 10 diamanter</p>
     <p><strong>${best ? best * 10 + '-klubben' : 'Ingen klubb ännu'}</strong></p>${diamondScale(best)}
     ${rounds.length ? `<details open><summary>Historik · ${rounds.length} rundor</summary>
